@@ -1,0 +1,164 @@
+package handlers
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+{{if ne .DatabaseType "none" }}
+	"{{.ModulePath}}/internal/db"
+{{end}}
+)
+
+// RegisterRoutes sets up all the routes for the application
+{{if ne .DatabaseType "none" }}
+func RegisterRoutes(r *gin.Engine, database *db.Database) {
+{{else}}
+func RegisterRoutes(r *gin.Engine) {
+{{end}}
+	// Home page
+	r.GET("/", handleHome)
+	
+	// About page
+	r.GET("/about", handleAbout)
+	
+	// Contact page
+	r.GET("/contact", handleContact)
+	r.POST("/contact", handleContactSubmit)
+	
+{{if ne .DatabaseType "none" }}
+	// User pages (only if database is enabled)
+	users := r.Group("/users")
+	{
+		users.GET("", handleListUsers)
+		users.GET("/:id", handleGetUser)
+		users.POST("", handleCreateUser)
+		users.PUT("/:id", handleUpdateUser)
+		users.DELETE("/:id", handleDeleteUser)
+	}
+{{end}}
+}
+
+// handleHome renders the home page
+func handleHome(c *gin.Context) {
+	c.HTML(http.StatusOK, "home.html", gin.H{
+		"Title": "Welcome",
+		"Message": "Welcome to our web application",
+	})
+}
+
+// handleAbout renders the about page
+func handleAbout(c *gin.Context) {
+	c.HTML(http.StatusOK, "about.html", gin.H{
+		"Title": "About Us",
+		"Content": "This is a web application scaffolded with Echo Scaffold.",
+	})
+}
+
+// handleContact renders the contact form
+func handleContact(c *gin.Context) {
+	c.HTML(http.StatusOK, "contact.html", gin.H{
+		"Title": "Contact Us",
+	})
+}
+
+// ContactForm represents the contact form data
+type ContactForm struct {
+	Name    string `form:"name" binding:"required"`
+	Email   string `form:"email" binding:"required,email"`
+	Message string `form:"message" binding:"required"`
+}
+
+// handleContactSubmit processes the contact form submission
+func handleContactSubmit(c *gin.Context) {
+	var form ContactForm
+	if err := c.ShouldBind(&form); err != nil {
+		c.HTML(http.StatusBadRequest, "contact.html", gin.H{
+			"Title":   "Contact Us",
+			"Error":   "Invalid form data",
+			"FormData": form,
+		})
+		return
+	}
+	
+	// In a real application, you would validate and process the form data
+	// For now, just redirect back with a success message
+	
+	c.HTML(http.StatusOK, "contact.html", gin.H{
+		"Title":   "Contact Us",
+		"Success": "Your message has been sent!",
+	})
+}
+
+{{if ne .DatabaseType "none" }}
+// User represents a user in the database
+type User struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+// handleListUsers lists all users
+func handleListUsers(c *gin.Context) {
+	// In a real application, fetch from database
+	users := []User{
+		{ID: "1", Name: "John Doe", Email: "john@example.com"},
+		{ID: "2", Name: "Jane Smith", Email: "jane@example.com"},
+	}
+	
+	c.HTML(http.StatusOK, "users/list.html", gin.H{
+		"Title": "Users",
+		"Users": users,
+	})
+}
+
+// handleGetUser displays a single user
+func handleGetUser(c *gin.Context) {
+	id := c.Param("id")
+	
+	// In a real application, fetch from database
+	user := User{ID: id, Name: "John Doe", Email: "john@example.com"}
+	
+	c.HTML(http.StatusOK, "users/detail.html", gin.H{
+		"Title": "User Details",
+		"User":  user,
+	})
+}
+
+// handleCreateUser creates a new user
+func handleCreateUser(c *gin.Context) {
+	var user User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	
+	// In a real application, save to database
+	user.ID = "3" // simulate ID generation
+	
+	c.JSON(http.StatusCreated, user)
+}
+
+// handleUpdateUser updates a user
+func handleUpdateUser(c *gin.Context) {
+	id := c.Param("id")
+	var user User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	
+	// In a real application, update in database
+	user.ID = id // ensure ID matches the URL parameter
+	
+	c.JSON(http.StatusOK, user)
+}
+
+// handleDeleteUser deletes a user
+func handleDeleteUser(c *gin.Context) {
+	// id := c.Param("id")
+	
+	// In a real application, delete from database
+	
+	c.Status(http.StatusNoContent)
+}
+{{end}}

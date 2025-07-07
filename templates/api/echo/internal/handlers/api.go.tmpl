@@ -1,0 +1,61 @@
+package handlers
+
+import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+)
+
+// RegisterAPIRoutes registers all API routes
+func RegisterAPIRoutes(g *echo.Group) {
+	v1 := g.Group("/v1")
+	
+	// Register all API v1 routes
+	v1.GET("", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, map[string]string{
+			"message": "Welcome to the API",
+		})
+	})
+
+	// Items routes
+	items := v1.Group("/items")
+	items.GET("", getItems)
+	items.POST("", createItem)
+	items.GET("/:id", getItem)
+	items.PUT("/:id", updateItem)
+	items.DELETE("/:id", deleteItem)
+}
+
+// Handler functions
+func getItems(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"items": []interface{}{},
+	})
+}
+
+func createItem(c echo.Context) error {
+	return c.JSON(http.StatusCreated, map[string]interface{}{
+		"id":      "1",
+		"message": "Item created",
+	})
+}
+
+func getItem(c echo.Context) error {
+	id := c.Param("id")
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"id":   id,
+		"name": "Sample Item",
+	})
+}
+
+func updateItem(c echo.Context) error {
+	id := c.Param("id")
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"id":      id,
+		"message": "Item updated",
+	})
+}
+
+func deleteItem(c echo.Context) error {
+	return c.NoContent(http.StatusNoContent)
+}

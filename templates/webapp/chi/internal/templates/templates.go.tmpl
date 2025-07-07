@@ -1,0 +1,130 @@
+package templates
+
+import (
+	"html/template"
+	"net/http"
+	"path/filepath"
+)
+
+var (
+	// Templates holds all parsed templates
+	templates map[string]*template.Template
+)
+
+// InitTemplates initializes all templates
+func InitTemplates() {
+	if templates == nil {
+		templates = make(map[string]*template.Template)
+	}
+
+	// Define template functions
+	funcMap := template.FuncMap{
+		"safeHTML": func(s string) template.HTML {
+			return template.HTML(s)
+		},
+		"safeURL": func(s string) template.URL {
+			return template.URL(s)
+		},
+	}
+
+	// Get all page templates
+	pages, err := filepath.Glob("views/*.html")
+	if err != nil {
+		panic(err)
+	}
+
+	// Parse each page template
+	for _, page := range pages {
+		name := filepath.Base(page)
+		
+		// Create a new template with the page name
+		t := template.New(name).Funcs(funcMap)
+		
+		// Parse the layout template
+		t, err = t.ParseFiles("views/layouts/layout.html")
+		if err != nil {
+			panic(err)
+		}
+		
+		// Parse any partial templates if they exist
+		if partials, err := filepath.Glob("views/partials/*.html"); err == nil {
+			t, err = t.ParseFiles(partials...)
+			if err != nil {
+				panic(err)
+			}
+		}
+		
+		// Parse the page template
+		t, err = t.ParseFiles(page)
+		if err != nil {
+			panic(err)
+		}
+		
+		// Add to templates map
+		templates[name] = t
+	}
+	
+	// Also parse templates in subdirectories
+	subDirs := []string{"users"}
+	for _, dir := range subDirs {
+		subPath := filepath.Join("views", dir, "*.html")
+		subPages, err := filepath.Glob(subPath)
+		if err != nil {
+			continue
+		}
+		
+		for _, page := range subPages {
+			name := filepath.Join(dir, filepath.Base(page))
+			
+			// Create a new template with the page name
+			t := template.New(filepath.Base(page)).Funcs(funcMap)
+			
+			// Parse the layout template
+			t, err = t.ParseFiles("views/layouts/layout.html")
+			if err != nil {
+				panic(err)
+			}
+			
+			// Parse any partial templates if they exist
+			if partials, err := filepath.Glob("views/partials/*.html"); err == nil {
+				t, err = t.ParseFiles(partials...)
+				if err != nil {
+					panic(err)
+				}
+			}
+			
+			// Parse the page template
+			t, err = t.ParseFiles(page)
+			if err != nil {
+				panic(err)
+			}
+			
+			// Add to templates map
+			templates[name] = t
+		}
+	}
+}
+
+// RenderPage renders a template with the given data
+func RenderPage(w http.ResponseWriter, name string, data map[string]interface{}) {
+	// Get the template
+	t, exists := templates[name]
+	if !exists {
+		http.Error(w, "Template not found", http.StatusInternalServerError)
+		return
+	}
+	
+	// If data is nil, create an empty map
+	if data == nil {
+		data = make(map[string]interface{})
+	}
+	
+	// Add current URL path
+	data["CurrentPath"] = ""
+	
+	// Execute the template
+	err := t.ExecuteTemplate(w, "layout.html", data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}

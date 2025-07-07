@@ -1,0 +1,213 @@
+package handlers
+
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+	"runtime/debug"
+	"strings"
+	"time"
+
+	"{{.ModulePath}}/internal/templates"
+{{if ne .DatabaseType "none" }}
+	"{{.ModulePath}}/internal/db"
+{{end}}
+)
+
+// LoggingMiddleware logs all HTTP requests
+func LoggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		
+		// Call the next handler
+		next.ServeHTTP(w, r)
+		
+		// Log the request
+		log.Printf(
+			"%s %s %s %s",
+			r.RemoteAddr,
+			r.Method,
+			r.URL.Path,
+			time.Since(start),
+		)
+	})
+}
+
+// RecoveryMiddleware recovers from panics
+func RecoveryMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				log.Printf("Panic: %v\n%s", err, debug.Stack())
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			}
+		}()
+		
+		next.ServeHTTP(w, r)
+	})
+}
+
+// RegisterRoutes sets up all the routes for the application
+{{if ne .DatabaseType "none" }}
+func RegisterRoutes(mux *http.ServeMux, database *db.Database) {
+{{else}}
+func RegisterRoutes(mux *http.ServeMux) {
+{{end}}
+	// Home page
+	mux.HandleFunc("GET /", handleHome)
+	
+	// About page
+	mux.HandleFunc("GET /about", handleAbout)
+	
+	// Contact page
+	mux.HandleFunc("GET /contact", handleContact)
+	mux.HandleFunc("POST /contact", handleContactSubmit)
+	
+{{if ne .DatabaseType "none" }}
+	// User pages (only if database is enabled)
+	mux.HandleFunc("GET /users", handleListUsers)
+	mux.HandleFunc("GET /users/{id}", handleGetUser)
+	mux.HandleFunc("POST /users", handleCreateUser)
+	mux.HandleFunc("PUT /users/{id}", handleUpdateUser)
+	mux.HandleFunc("DELETE /users/{id}", handleDeleteUser)
+{{end}}
+}
+
+// handleHome renders the home page
+func handleHome(w http.ResponseWriter, r *http.Request) {
+	templates.RenderPage(w, "home.html", map[string]interface{}{
+		"Title": "Welcome",
+		"Message": "Welcome to our web application",
+	})
+}
+
+// handleAbout renders the about page
+func handleAbout(w http.ResponseWriter, r *http.Request) {
+	templates.RenderPage(w, "about.html", map[string]interface{}{
+		"Title": "About Us",
+		"Content": "This is a web application scaffolded with Echo Scaffold.",
+	})
+}
+
+// handleContact renders the contact form
+func handleContact(w http.ResponseWriter, r *http.Request) {
+	templates.RenderPage(w, "contact.html", map[string]interface{}{
+		"Title": "Contact Us",
+	})
+}
+
+// ContactForm represents the contact form data
+type ContactForm struct {
+	Name    string
+	Email   string
+	Message string
+}
+
+// handleContactSubmit processes the contact form submission
+func handleContactSubmit(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		templates.RenderPage(w, "contact.html", map[string]interface{}{
+			"Title": "Contact Us",
+			"Error": "Invalid form data",
+		})
+		return
+	}
+	
+	form := ContactForm{
+		Name:    r.PostForm.Get("name"),
+		Email:   r.PostForm.Get("email"),
+		Message: r.PostForm.Get("message"),
+	}
+	
+	// In a real application, you would validate and process the form data
+	// For now, just redirect back with a success message
+	
+	templates.RenderPage(w, "contact.html", map[string]interface{}{
+		"Title":   "Contact Us",
+		"Success": "Your message has been sent!",
+		"FormData": form,
+	})
+}
+
+{{if ne .DatabaseType "none" }}
+// User represents a user in the database
+type User struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+// handleListUsers lists all users
+func handleListUsers(w http.ResponseWriter, r *http.Request) {
+	// In a real application, fetch from database
+	users := []User{
+		{ID: "1", Name: "John Doe", Email: "john@example.com"},
+		{ID: "2", Name: "Jane Smith", Email: "jane@example.com"},
+	}
+	
+	templates.RenderPage(w, "users/list.html", map[string]interface{}{
+		"Title": "Users",
+		"Users": users,
+	})
+}
+
+// handleGetUser displays a single user
+func handleGetUser(w http.ResponseWriter, r *http.Request) {
+	// Extract the ID from the URL path
+	id := strings.TrimPrefix(r.URL.Path, "/users/")
+	
+	// In a real application, fetch from database
+	user := User{ID: id, Name: "John Doe", Email: "john@example.com"}
+	
+	templates.RenderPage(w, "users/detail.html", map[string]interface{}{
+		"Title": "User Details",
+		"User":  user,
+	})
+}
+
+// handleCreateUser creates a new user
+func handleCreateUser(w http.ResponseWriter, r *http.Request) {
+	var user User
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+	
+	// In a real application, save to database
+	user.ID = "3" // simulate ID generation
+	
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(user)
+}
+
+// handleUpdateUser updates a user
+func handleUpdateUser(w http.ResponseWriter, r *http.Request) {
+	// Extract the ID from the URL path
+	id := strings.TrimPrefix(r.URL.Path, "/users/")
+	
+	var user User
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+	
+	// In a real application, update in database
+	user.ID = id // ensure ID matches the URL parameter
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(user)
+}
+
+// handleDeleteUser deletes a user
+func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
+	// Extract the ID from the URL path
+	// id := strings.TrimPrefix(r.URL.Path, "/users/")
+	
+	// In a real application, delete from database
+	
+	w.WriteHeader(http.StatusNoContent)
+}
+{{end}}

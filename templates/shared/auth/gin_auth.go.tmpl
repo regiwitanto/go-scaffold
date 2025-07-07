@@ -1,0 +1,12 @@
+package auth
+
+import (
+	"github.com/gin-gonic/gin"
+)
+
+// GinBasicAuth provides HTTP Basic Authentication for Gin
+func GinBasicAuth(username, password, realm string) gin.HandlerFunc {
+	return gin.BasicAuth(gin.Accounts{
+		username: password,
+	})
+}

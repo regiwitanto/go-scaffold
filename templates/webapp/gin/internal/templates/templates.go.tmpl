@@ -1,0 +1,68 @@
+package templates
+
+import (
+	"html/template"
+	"path/filepath"
+
+	"github.com/gin-gonic/gin"
+)
+
+// InitTemplates initializes all templates for the Gin engine
+func InitTemplates(r *gin.Engine) {
+	// Define template functions
+	funcMap := template.FuncMap{
+		"safeHTML": func(s string) template.HTML {
+			return template.HTML(s)
+		},
+		"safeURL": func(s string) template.URL {
+			return template.URL(s)
+		},
+	}
+	
+	// Create a new template with functions
+	t := template.New("").Funcs(funcMap)
+	
+	// Load all templates
+	
+	// First load layouts
+	layouts, err := filepath.Glob("views/layouts/*.html")
+	if err != nil {
+		panic(err)
+	}
+	
+	// Then load pages
+	pages, err := filepath.Glob("views/*.html")
+	if err != nil {
+		panic(err)
+	}
+	
+	// Load partials if they exist
+	partials, _ := filepath.Glob("views/partials/*.html")
+	
+	// Load user pages if they exist
+	userPages, _ := filepath.Glob("views/users/*.html")
+	
+	// Combine all template files
+	allFiles := append(layouts, pages...)
+	if len(partials) > 0 {
+		allFiles = append(allFiles, partials...)
+	}
+	if len(userPages) > 0 {
+		allFiles = append(allFiles, userPages...)
+	}
+	
+	// Parse all template files
+	t, err = t.ParseFiles(allFiles...)
+	if err != nil {
+		panic(err)
+	}
+	
+	// Set the templates for the Gin engine
+	r.SetHTMLTemplate(t)
+	
+	// Add middleware to inject current path into templates
+	r.Use(func(c *gin.Context) {
+		c.Set("CurrentPath", c.Request.URL.Path)
+		c.Next()
+	})
+}

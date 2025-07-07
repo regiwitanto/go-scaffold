@@ -1,0 +1,142 @@
+package handlers
+
+import (
+	"encoding/json"
+	"net/http"
+	"regexp"
+	"strings"
+)
+
+// Item represents a simple resource
+type Item struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// RegisterRoutes registers all API routes
+func RegisterRoutes(mux *http.ServeMux) {
+	// API handler
+	mux.Handle("/api/", http.StripPrefix("/api", apiHandler()))
+}
+
+func apiHandler() http.Handler {
+	mux := http.NewServeMux()
+
+	// API v1 routes
+	mux.HandleFunc("/v1", welcome)
+	mux.HandleFunc("/v1/items", itemsHandler)
+	
+	// Item ID pattern matcher
+	idPattern := regexp.MustCompile(`^/v1/items/(\w+)$`)
+	mux.HandleFunc("/v1/items/", func(w http.ResponseWriter, r *http.Request) {
+		matches := idPattern.FindStringSubmatch(r.URL.Path)
+		if len(matches) < 2 {
+			http.NotFound(w, r)
+			return
+		}
+		
+		id := matches[1]
+		
+		switch r.Method {
+		case http.MethodGet:
+			getItem(w, r, id)
+		case http.MethodPut:
+			updateItem(w, r, id)
+		case http.MethodDelete:
+			deleteItem(w, r, id)
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	})
+
+	return mux
+}
+
+// Handler functions
+func welcome(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "Welcome to the API",
+	})
+}
+
+func itemsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	
+	switch r.Method {
+	case http.MethodGet:
+		getItems(w, r)
+	case http.MethodPost:
+		createItem(w, r)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func getItems(w http.ResponseWriter, r *http.Request) {
+	// In a real application, fetch from database
+	items := []Item{
+		{ID: "1", Name: "Item One"},
+		{ID: "2", Name: "Item Two"},
+	}
+	json.NewEncoder(w).Encode(map[string][]Item{"items": items})
+}
+
+func createItem(w http.ResponseWriter, r *http.Request) {
+	var item Item
+	if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+
+	// In a real application, save to database
+	item.ID = "3" // simulate ID generation
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Item created",
+		"item":    item,
+	})
+}
+
+func getItem(w http.ResponseWriter, r *http.Request, id string) {
+	// In a real application, fetch from database
+	item := Item{ID: id, Name: "Sample Item"}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(item)
+}
+
+func updateItem(w http.ResponseWriter, r *http.Request, id string) {
+	var item Item
+	if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+
+	// In a real application, update in database
+	item.ID = id // ensure ID matches the URL parameter
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Item updated",
+		"item":    item,
+	})
+}
+
+func deleteItem(w http.ResponseWriter, r *http.Request, id string) {
+	// In a real application, delete from database
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Item deleted",
+		"id":      id,
+	})
+}

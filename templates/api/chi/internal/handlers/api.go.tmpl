@@ -1,0 +1,62 @@
+package handlers
+
+import (
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+)
+
+// NewAPIv1Router returns a router for API v1 endpoints
+func NewAPIv1Router() chi.Router {
+	r := chi.NewRouter()
+
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"message":"Welcome to the API"}`))
+	})
+
+	// Sample resource endpoints
+	r.Route("/items", func(r chi.Router) {
+		r.Get("/", handleGetItems)
+		r.Post("/", handleCreateItem)
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", handleGetItem)
+			r.Put("/", handleUpdateItem)
+			r.Delete("/", handleDeleteItem)
+		})
+	})
+
+	return r
+}
+
+func handleGetItems(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"items":[]}`))
+}
+
+func handleCreateItem(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte(`{"id":"1","message":"Item created"}`))
+}
+
+func handleGetItem(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"id":"` + id + `","name":"Sample Item"}`))
+}
+
+func handleUpdateItem(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"id":"` + id + `","message":"Item updated"}`))
+}
+
+func handleDeleteItem(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
+}

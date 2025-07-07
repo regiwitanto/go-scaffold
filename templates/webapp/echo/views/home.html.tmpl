@@ -1,0 +1,35 @@
+{{define "home.html"}}
+{{template "layout.html" .}}
+{{end}}
+
+{{define "content"}}
+<section class="hero">
+    <h1>{{.Message}}</h1>
+    <p>This is a simple web application built with Echo framework.</p>
+    <a href="/about" class="btn">Learn More</a>
+</section>
+
+<section class="features">
+    <h2>Features</h2>
+    <div class="feature-grid">
+        <div class="feature">
+            <h3>Echo Framework</h3>
+            <p>Built with the powerful Echo web framework for Go.</p>
+        </div>
+        <div class="feature">
+            <h3>HTML Templates</h3>
+            <p>Uses Go's template system for rendering views.</p>
+        </div>
+        <div class="feature">
+            <h3>Static Files</h3>
+            <p>Serves CSS, JavaScript, and other static assets.</p>
+        </div>
+        {{if ne .DatabaseType "none"}}
+        <div class="feature">
+            <h3>Database Integration</h3>
+            <p>Connected to {{.DatabaseType}} database for data persistence.</p>
+        </div>
+        {{end}}
+    </div>
+</section>
+{{end}}

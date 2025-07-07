@@ -1,0 +1,80 @@
+package templates
+
+import (
+	"html/template"
+	"io"
+	"path/filepath"
+
+	"github.com/labstack/echo/v4"
+)
+
+// Template renderer for Echo
+type Template struct {
+	templates *template.Template
+}
+
+// New creates a new template renderer
+func New() *Template {
+	// Parse all templates in the views directory
+	t := template.New("")
+	
+	// Add helper functions
+	t = t.Funcs(template.FuncMap{
+		"safeHTML": func(s string) template.HTML {
+			return template.HTML(s)
+		},
+		"safeURL": func(s string) template.URL {
+			return template.URL(s)
+		},
+	})
+	
+	// Parse templates
+	t, err := t.ParseGlob("views/*.html")
+	if err != nil {
+		panic(err)
+	}
+	
+	// Parse layout templates if they exist
+	if layouts, err := filepath.Glob("views/layouts/*.html"); err == nil {
+		t, err = t.ParseFiles(layouts...)
+		if err != nil {
+			panic(err)
+		}
+	}
+	
+	// Parse partial templates if they exist
+	if partials, err := filepath.Glob("views/partials/*.html"); err == nil {
+		t, err = t.ParseFiles(partials...)
+		if err != nil {
+			panic(err)
+		}
+	}
+	
+	return &Template{
+		templates: t,
+	}
+}
+
+// Render implements echo.Renderer interface
+func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+	// Add global data available to all templates
+	var templateData map[string]interface{}
+	
+	if data != nil {
+		if td, ok := data.(map[string]interface{}); ok {
+			templateData = td
+		} else {
+			// If data is not a map, create a new map and add the data as "Data" key
+			templateData = map[string]interface{}{
+				"Data": data,
+			}
+		}
+	} else {
+		templateData = map[string]interface{}{}
+	}
+	
+	// Add current URL path
+	templateData["CurrentPath"] = c.Request().URL.Path
+	
+	return t.templates.ExecuteTemplate(w, name, templateData)
+}

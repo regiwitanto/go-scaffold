@@ -1,0 +1,24 @@
+{{ define "home.html" }}
+{{ template "layout.html" . }}
+{{ end }}
+
+{{ define "content" }}
+<div class="home-page">
+    <h2>{{.Title}}</h2>
+    <p>{{.Message}}</p>
+    <div class="features">
+        <div class="feature">
+            <h3>Gin Framework</h3>
+            <p>A high-performance web framework for Go with excellent middleware support.</p>
+        </div>
+        <div class="feature">
+            <h3>Modern Architecture</h3>
+            <p>Built with clean architecture principles for maintainability.</p>
+        </div>
+        <div class="feature">
+            <h3>Production Ready</h3>
+            <p>Includes logging, error handling, and graceful shutdown.</p>
+        </div>
+    </div>
+</div>
+{{ end }}

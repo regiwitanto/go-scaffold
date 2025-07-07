@@ -1,0 +1,119 @@
+package main
+
+import (
+	"context"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"{{.ModulePath}}/internal/handlers"
+	"{{.ModulePath}}/internal/templates"
+{{if eq .DatabaseType "postgresql" }}
+	"{{.ModulePath}}/internal/db"
+{{else if eq .DatabaseType "mysql" }}
+	"{{.ModulePath}}/internal/db"
+{{else if eq .DatabaseType "sqlite" }}
+	"{{.ModulePath}}/internal/db"
+{{end}}
+)
+
+func main() {
+	// Initialize Gin router
+	r := gin.Default()
+
+	// Configure middleware
+	r.Use(gin.Recovery())
+	r.Use(gin.Logger())
+	
+{{if eq .DatabaseType "postgresql" }}
+	// Initialize database
+	dbConfig := db.Config{
+		DSN:         os.Getenv("DATABASE_URL"),
+		MaxOpenConn: 25,
+		MaxIdleConn: 25,
+		MaxIdleTime: 15 * time.Minute,
+	}
+	
+	database, err := db.New(dbConfig)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer database.Close()
+{{else if eq .DatabaseType "mysql" }}
+	// Initialize database
+	dbConfig := db.Config{
+		DSN:         os.Getenv("DATABASE_URL"),
+		MaxOpenConn: 25,
+		MaxIdleConn: 25,
+		MaxIdleTime: 15 * time.Minute,
+	}
+	
+	database, err := db.New(dbConfig)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer database.Close()
+{{else if eq .DatabaseType "sqlite" }}
+	// Initialize database
+	dbConfig := db.Config{
+		DSN:         "app.db",
+		MaxOpenConn: 1, // SQLite supports only one writer at a time
+		MaxIdleConn: 1,
+		MaxIdleTime: 15 * time.Minute,
+	}
+	
+	database, err := db.New(dbConfig)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer database.Close()
+{{end}}
+
+	// Initialize template renderer
+	templates.InitTemplates(r)
+
+	// Serve static files
+	r.Static("/static", "./static")
+
+	// Setup routes
+{{if ne .DatabaseType "none" }}
+	handlers.RegisterRoutes(r, database)
+{{else}}
+	handlers.RegisterRoutes(r)
+{{end}}
+
+	// Create HTTP server
+	server := &http.Server{
+		Addr:         ":8080",
+		Handler:      r,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
+	}
+
+	// Start server in a goroutine
+	go func() {
+		log.Printf("Starting server on %s", server.Addr)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Error starting server: %v", err)
+		}
+	}()
+
+	// Wait for interrupt signal
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+
+	// Shutdown gracefully
+	log.Println("Shutting down server...")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
+	}
+	
+	log.Println("Server exited properly")
+}

@@ -1,0 +1,21 @@
+{{define "content"}}
+<div class="about-page">
+    <h2>{{.Title}}</h2>
+    <p>{{.Content}}</p>
+    
+    <div class="about-content">
+        <h3>Our Mission</h3>
+        <p>To provide developers with the best tools and templates for building robust Go web applications.</p>
+        
+        <h3>Technology Stack</h3>
+        <ul>
+            <li>Go Programming Language</li>
+            <li>Chi Router</li>
+            <li>HTML Templates</li>
+            {{if ne .DatabaseType "none"}}
+            <li>{{.DatabaseType}} Database</li>
+            {{end}}
+        </ul>
+    </div>
+</div>
+{{end}}

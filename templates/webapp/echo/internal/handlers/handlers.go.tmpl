@@ -1,0 +1,159 @@
+package handlers
+
+import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+{{if ne .DatabaseType "none" }}
+	"{{.ModulePath}}/internal/db"
+{{end}}
+)
+
+// RegisterRoutes sets up all the routes for the application
+{{if ne .DatabaseType "none" }}
+func RegisterRoutes(e *echo.Echo, database *db.Database) {
+{{else}}
+func RegisterRoutes(e *echo.Echo) {
+{{end}}
+	// Home page
+	e.GET("/", handleHome)
+	
+	// About page
+	e.GET("/about", handleAbout)
+	
+	// Contact page
+	e.GET("/contact", handleContact)
+	e.POST("/contact", handleContactSubmit)
+	
+{{if ne .DatabaseType "none" }}
+	// User pages (only if database is enabled)
+	users := e.Group("/users")
+	users.GET("", handleListUsers)
+	users.GET("/:id", handleGetUser)
+	users.POST("", handleCreateUser)
+	users.PUT("/:id", handleUpdateUser)
+	users.DELETE("/:id", handleDeleteUser)
+{{end}}
+}
+
+// handleHome renders the home page
+func handleHome(c echo.Context) error {
+	return c.Render(http.StatusOK, "home.html", map[string]interface{}{
+		"Title": "Welcome",
+		"Message": "Welcome to our web application",
+	})
+}
+
+// handleAbout renders the about page
+func handleAbout(c echo.Context) error {
+	return c.Render(http.StatusOK, "about.html", map[string]interface{}{
+		"Title": "About Us",
+		"Content": "This is a web application scaffolded with Echo Scaffold.",
+	})
+}
+
+// handleContact renders the contact form
+func handleContact(c echo.Context) error {
+	return c.Render(http.StatusOK, "contact.html", map[string]interface{}{
+		"Title": "Contact Us",
+	})
+}
+
+// ContactForm represents the contact form data
+type ContactForm struct {
+	Name    string `form:"name" validate:"required"`
+	Email   string `form:"email" validate:"required,email"`
+	Message string `form:"message" validate:"required"`
+}
+
+// handleContactSubmit processes the contact form submission
+func handleContactSubmit(c echo.Context) error {
+	form := new(ContactForm)
+	if err := c.Bind(form); err != nil {
+		return c.Render(http.StatusBadRequest, "contact.html", map[string]interface{}{
+			"Title":   "Contact Us",
+			"Error":   "Invalid form data",
+			"FormData": form,
+		})
+	}
+	
+	// In a real application, you would validate and process the form data
+	// For now, just redirect back with a success message
+	
+	return c.Render(http.StatusOK, "contact.html", map[string]interface{}{
+		"Title":   "Contact Us",
+		"Success": "Your message has been sent!",
+	})
+}
+
+{{if ne .DatabaseType "none" }}
+// User represents a user in the database
+type User struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+// handleListUsers lists all users
+func handleListUsers(c echo.Context) error {
+	// In a real application, fetch from database
+	users := []User{
+		{ID: "1", Name: "John Doe", Email: "john@example.com"},
+		{ID: "2", Name: "Jane Smith", Email: "jane@example.com"},
+	}
+	
+	return c.Render(http.StatusOK, "users/list.html", map[string]interface{}{
+		"Title": "Users",
+		"Users": users,
+	})
+}
+
+// handleGetUser displays a single user
+func handleGetUser(c echo.Context) error {
+	id := c.Param("id")
+	
+	// In a real application, fetch from database
+	user := User{ID: id, Name: "John Doe", Email: "john@example.com"}
+	
+	return c.Render(http.StatusOK, "users/detail.html", map[string]interface{}{
+		"Title": "User Details",
+		"User":  user,
+	})
+}
+
+// handleCreateUser creates a new user
+func handleCreateUser(c echo.Context) error {
+	user := new(User)
+	if err := c.Bind(user); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+	}
+	
+	// In a real application, save to database
+	user.ID = "3" // simulate ID generation
+	
+	return c.JSON(http.StatusCreated, user)
+}
+
+// handleUpdateUser updates a user
+func handleUpdateUser(c echo.Context) error {
+	id := c.Param("id")
+	user := new(User)
+	if err := c.Bind(user); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+	}
+	
+	// In a real application, update in database
+	user.ID = id // ensure ID matches the URL parameter
+	
+	return c.JSON(http.StatusOK, user)
+}
+
+// handleDeleteUser deletes a user
+func handleDeleteUser(c echo.Context) error {
+	id := c.Param("id")
+	
+	// In a real application, delete from database
+	
+	return c.NoContent(http.StatusNoContent)
+}
+{{end}}

@@ -18,15 +18,25 @@ import (
 type Config struct {
 	Port int
 	Env  string
-	{{if eq .DatabaseType "postgresql" -}}
+	{{if ne .DatabaseType "none" -}}
 	
 	// Database configuration
+	{{if eq .DatabaseType "postgresql" -}}
 	DBUser     string
 	DBPassword string
 	DBName     string
 	DBHost     string
 	DBPort     int
 	DBSSLMode  string
+	{{- else if eq .DatabaseType "mysql" -}}
+	DBUser     string
+	DBPassword string
+	DBName     string
+	DBHost     string
+	DBPort     int
+	{{- else if eq .DatabaseType "sqlite" -}}
+	DBPath     string
+	{{- end}}
 	{{- end}}
 	
 	{{if (call .HasFeature "basic-auth") -}}
@@ -72,8 +82,9 @@ func Load() (*Config, error) {
 		cfg.Env = "development" // Default environment
 	}
 	
-	{{if eq .DatabaseType "postgresql" -}}
+	{{if ne .DatabaseType "none" -}}
 	// Database configuration
+	{{if eq .DatabaseType "postgresql" -}}
 	cfg.DBUser = os.Getenv("DB_USER")
 	cfg.DBPassword = os.Getenv("DB_PASSWORD")
 	cfg.DBName = os.Getenv("DB_NAME")
@@ -97,6 +108,31 @@ func Load() (*Config, error) {
 	if cfg.DBSSLMode == "" {
 		cfg.DBSSLMode = "disable" // Default SSL mode
 	}
+	{{- else if eq .DatabaseType "mysql" -}}
+	cfg.DBUser = os.Getenv("DB_USER")
+	cfg.DBPassword = os.Getenv("DB_PASSWORD")
+	cfg.DBName = os.Getenv("DB_NAME")
+	cfg.DBHost = os.Getenv("DB_HOST")
+	if cfg.DBHost == "" {
+		cfg.DBHost = "localhost" // Default host
+	}
+	
+	dbPort := os.Getenv("DB_PORT")
+	if dbPort == "" {
+		dbPort = "3306" // Default MySQL port
+	}
+	
+	dbPortInt, err := strconv.Atoi(dbPort)
+	if err != nil {
+		return nil, fmt.Errorf("invalid DB_PORT: %w", err)
+	}
+	cfg.DBPort = dbPortInt
+	{{- else if eq .DatabaseType "sqlite" -}}
+	cfg.DBPath = os.Getenv("DB_PATH")
+	if cfg.DBPath == "" {
+		cfg.DBPath = "app.db" // Default SQLite database file
+	}
+	{{- end}}
 	{{- end}}
 	
 	{{if (call .HasFeature "basic-auth") -}}
@@ -142,14 +178,24 @@ func Parse() *Config {
 	flag.IntVar(&cfg.Port, "port", 8080, "Server port")
 	flag.StringVar(&cfg.Env, "env", "development", "Environment (development, staging, production)")
 	
-	{{if eq .DatabaseType "postgresql" -}}
+	{{if ne .DatabaseType "none" -}}
 	// Database configuration
+	{{if eq .DatabaseType "postgresql" -}}
 	flag.StringVar(&cfg.DBUser, "db-user", "", "Database user")
 	flag.StringVar(&cfg.DBPassword, "db-password", "", "Database password")
 	flag.StringVar(&cfg.DBName, "db-name", "", "Database name")
 	flag.StringVar(&cfg.DBHost, "db-host", "localhost", "Database host")
 	flag.IntVar(&cfg.DBPort, "db-port", 5432, "Database port")
 	flag.StringVar(&cfg.DBSSLMode, "db-sslmode", "disable", "Database SSL mode")
+	{{- else if eq .DatabaseType "mysql" -}}
+	flag.StringVar(&cfg.DBUser, "db-user", "", "Database user")
+	flag.StringVar(&cfg.DBPassword, "db-password", "", "Database password")
+	flag.StringVar(&cfg.DBName, "db-name", "", "Database name")
+	flag.StringVar(&cfg.DBHost, "db-host", "localhost", "Database host")
+	flag.IntVar(&cfg.DBPort, "db-port", 3306, "Database port")
+	{{- else if eq .DatabaseType "sqlite" -}}
+	flag.StringVar(&cfg.DBPath, "db-path", "app.db", "SQLite database file path")
+	{{- end}}
 	{{- end}}
 	
 	{{if (call .HasFeature "basic-auth") -}}

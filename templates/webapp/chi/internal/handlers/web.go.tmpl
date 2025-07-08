@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 	
-	{{if eq .DatabaseType "postgresql" -}}
+	{{if ne .DatabaseType "none" -}}
 	"database/sql"
 	{{- end}}
 	
@@ -18,16 +18,16 @@ import (
 
 // WebHandler handles web requests
 type WebHandler struct {
-	{{if eq .DatabaseType "postgresql" -}}
+	{{if ne .DatabaseType "none" -}}
 	DB  *sql.DB
 	{{- end}}
 	Cfg *config.Config
 }
 
 // NewWebHandler creates a new web handler
-func NewWebHandler({{if eq .DatabaseType "postgresql"}}db *sql.DB, {{end}}cfg *config.Config) *WebHandler {
+func NewWebHandler({{if ne .DatabaseType "none"}}db *sql.DB, {{end}}cfg *config.Config) *WebHandler {
 	return &WebHandler{
-		{{if eq .DatabaseType "postgresql" -}}
+		{{if ne .DatabaseType "none" -}}
 		DB:  db,
 		{{- end}}
 		Cfg: cfg,

@@ -14,7 +14,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	
 	"{{.ModulePath}}/internal/config"
-	{{if eq .DatabaseType "postgresql" -}}
+	{{if ne .DatabaseType "none" -}}
 	"{{.ModulePath}}/internal/database"
 	{{- end}}
 	"{{.ModulePath}}/internal/handlers"
@@ -43,7 +43,7 @@ func main() {
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 	{{- end}}
 	
-	{{if eq .DatabaseType "postgresql" -}}
+	{{if ne .DatabaseType "none" -}}
 	// Connect to the database
 	db, err := database.Connect(cfg)
 	if err != nil {
@@ -72,7 +72,7 @@ func main() {
 	r.Use(middleware.Timeout(30 * time.Second))
 	
 	// Create web handler
-	h := handlers.NewWebHandler({{if eq .DatabaseType "postgresql"}}db, {{end}}cfg)
+	h := handlers.NewWebHandler({{if ne .DatabaseType "none"}}db, {{end}}cfg)
 	
 	// Serve static files
 	fileServer := http.FileServer(http.Dir("./static"))

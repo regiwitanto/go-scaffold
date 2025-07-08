@@ -6,13 +6,14 @@ import (
 	"github.com/go-chi/chi/v5"
 	"{{.ModulePath}}/internal/templates"
 {{if ne .DatabaseType "none" }}
-	"{{.ModulePath}}/internal/db"
+	"{{.ModulePath}}/internal/database"
+	"database/sql"
 {{end}}
 )
 
 // RegisterRoutes sets up all the routes for the application
 {{if ne .DatabaseType "none" }}
-func RegisterRoutes(r chi.Router, database *db.Database) {
+func RegisterRoutes(r chi.Router, db *sql.DB) {
 {{else}}
 func RegisterRoutes(r chi.Router) {
 {{end}}

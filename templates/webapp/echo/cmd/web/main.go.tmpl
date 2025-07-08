@@ -16,7 +16,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	
 	"{{.ModulePath}}/internal/config"
-	{{if eq .DatabaseType "postgresql" -}}
+	{{if ne .DatabaseType "none" -}}
 	"{{.ModulePath}}/internal/database"
 	{{- end}}
 	"{{.ModulePath}}/internal/handlers"
@@ -56,7 +56,7 @@ func main() {
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 	{{- end}}
 	
-	{{if eq .DatabaseType "postgresql" -}}
+	{{if ne .DatabaseType "none" -}}
 	// Connect to the database
 	db, err := database.Connect(cfg)
 	if err != nil {
@@ -94,7 +94,7 @@ func main() {
 	e.Static("/static", "static")
 	
 	// Register handlers
-	h := handlers.NewWebHandler({{if eq .DatabaseType "postgresql"}}db, {{end}}cfg)
+	h := handlers.NewWebHandler({{if ne .DatabaseType "none"}}db, {{end}}cfg)
 	
 	// Public routes
 	e.GET("/", h.Home)

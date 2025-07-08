@@ -5,13 +5,14 @@ import (
 
 	"github.com/labstack/echo/v4"
 {{if ne .DatabaseType "none" }}
-	"{{.ModulePath}}/internal/db"
+	"{{.ModulePath}}/internal/database"
+	"database/sql"
 {{end}}
 )
 
 // RegisterRoutes sets up all the routes for the application
 {{if ne .DatabaseType "none" }}
-func RegisterRoutes(e *echo.Echo, database *db.Database) {
+func RegisterRoutes(e *echo.Echo, db *sql.DB) {
 {{else}}
 func RegisterRoutes(e *echo.Echo) {
 {{end}}

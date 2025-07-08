@@ -16,4 +16,10 @@ require (
 {{if eq .DatabaseType "sqlite"}}
 	github.com/mattn/go-sqlite3 v1.14.22
 {{end}}
+{{if (call .HasFeature "sql-migrations")}}
+	github.com/golang-migrate/migrate/v4 v4.17.0
+{{end}}
+{{if (call .HasFeature "env-godotenv")}}
+	github.com/joho/godotenv v1.5.1
+{{end}}
 )

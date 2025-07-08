@@ -1,0 +1,16 @@
+Subject: Error Notification: {{ .Subject }}
+From: {{ .From }}
+To: {{ .To }}
+
+Hello,
+
+An error has occurred in the {{ .AppName }} application:
+
+Error: {{ .Error }}
+Time: {{ .Time }}
+Environment: {{ .Environment }}
+
+Please investigate this issue as soon as possible.
+
+Regards,
+{{ .AppName }} System

@@ -1,0 +1,125 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	
+	"{{.ModulePath}}/internal/config"
+	{{if eq .DatabaseType "postgresql" -}}
+	"{{.ModulePath}}/internal/database"
+	{{- end}}
+	"{{.ModulePath}}/internal/handlers"
+	{{if (call .HasFeature "basic-auth") -}}
+	customMiddleware "{{.ModulePath}}/internal/middleware"
+	{{- end}}
+	{{if (call .HasFeature "automatic-versioning") -}}
+	"{{.ModulePath}}/internal/version"
+	{{- end}}
+)
+
+func main() {
+	{{if eq .ConfigType "env" -}}
+	// Load configuration
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Failed to load configuration: %v", err)
+	}
+	{{- else -}}
+	// Parse command line flags
+	cfg := config.Parse()
+	{{- end}}
+	
+	{{if (call .HasFeature "access-logging") -}}
+	// Set up logging
+	logger := log.New(os.Stdout, "", log.LstdFlags)
+	{{- end}}
+	
+	{{if eq .DatabaseType "postgresql" -}}
+	// Connect to the database
+	db, err := database.Connect(cfg)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer db.Close()
+	
+	{{if (call .HasFeature "sql-migrations") -}}
+	// Run migrations
+	if err := database.Migrate(cfg); err != nil {
+		log.Fatalf("Failed to run migrations: %v", err)
+	}
+	{{- end}}
+	{{- end}}
+
+	// Create router
+	r := chi.NewRouter()
+	
+	// Standard middleware
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	{{if (call .HasFeature "access-logging") -}}
+	r.Use(middleware.Logger)
+	{{- end}}
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.Timeout(30 * time.Second))
+	
+	// Create web handler
+	h := handlers.NewWebHandler({{if eq .DatabaseType "postgresql"}}db, {{end}}cfg)
+	
+	// Serve static files
+	fileServer := http.FileServer(http.Dir("./static"))
+	r.Handle("/static/*", http.StripPrefix("/static", fileServer))
+	
+	// Public routes
+	r.Get("/", h.Home)
+	r.Get("/about", h.About)
+	
+	{{if (call .HasFeature "basic-auth") -}}
+	// Admin routes with basic auth
+	r.Route("/admin", func(r chi.Router) {
+		r.Use(customMiddleware.BasicAuth(cfg.AuthUsername, cfg.AuthPassword))
+		r.Get("/", h.AdminDashboard)
+	})
+	{{- end}}
+	
+	// Start the server
+	addr := fmt.Sprintf(":%d", cfg.Port)
+	srv := &http.Server{
+		Addr:    addr,
+		Handler: r,
+	}
+	
+	// Run the server in a goroutine
+	go func() {
+		log.Printf("Server starting on port %d", cfg.Port)
+		{{if (call .HasFeature "automatic-versioning") -}}
+		log.Printf("Version: %s (Build: %s)", version.Version, version.BuildID)
+		{{- end}}
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Server error: %v", err)
+		}
+	}()
+	
+	// Set up graceful shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	
+	log.Println("Shutting down server...")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
+	}
+	
+	log.Println("Server exited properly")
+}

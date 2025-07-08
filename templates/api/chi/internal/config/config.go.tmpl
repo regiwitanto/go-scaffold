@@ -1,0 +1,174 @@
+package config
+
+import (
+	{{if eq .ConfigType "env" -}}
+	"fmt"
+	"os"
+	"strconv"
+	
+	{{if (call .HasFeature "env-godotenv") -}}
+	"github.com/joho/godotenv"
+	{{- end}}
+	{{- else -}}
+	"flag"
+	{{- end}}
+)
+
+// Config holds all the configuration for the application
+type Config struct {
+	Port int
+	Env  string
+	{{if eq .DatabaseType "postgresql" -}}
+	
+	// Database configuration
+	DBUser     string
+	DBPassword string
+	DBName     string
+	DBHost     string
+	DBPort     int
+	DBSSLMode  string
+	{{- end}}
+	
+	{{if (call .HasFeature "basic-auth") -}}
+	// Basic auth credentials
+	AuthUsername string
+	AuthPassword string
+	{{- end}}
+	
+	{{if (call .HasFeature "email") -}}
+	// Email configuration
+	SMTPHost     string
+	SMTPPort     int
+	SMTPUsername string
+	SMTPPassword string
+	SMTPSender   string
+	{{- end}}
+}
+
+{{if eq .ConfigType "env" -}}
+// Load returns the application configuration from environment variables
+func Load() (*Config, error) {
+	{{if (call .HasFeature "env-godotenv") -}}
+	// Load .env file if it exists
+	_ = godotenv.Load() // Ignoring error as the .env file is optional
+	{{- end}}
+	
+	// Parse port
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // Default port
+	}
+	portInt, err := strconv.Atoi(port)
+	if err != nil {
+		return nil, fmt.Errorf("invalid PORT: %w", err)
+	}
+	
+	cfg := &Config{
+		Port: portInt,
+		Env:  os.Getenv("ENV"),
+	}
+	
+	if cfg.Env == "" {
+		cfg.Env = "development" // Default environment
+	}
+	
+	{{if eq .DatabaseType "postgresql" -}}
+	// Database configuration
+	cfg.DBUser = os.Getenv("DB_USER")
+	cfg.DBPassword = os.Getenv("DB_PASSWORD")
+	cfg.DBName = os.Getenv("DB_NAME")
+	cfg.DBHost = os.Getenv("DB_HOST")
+	if cfg.DBHost == "" {
+		cfg.DBHost = "localhost" // Default host
+	}
+	
+	dbPort := os.Getenv("DB_PORT")
+	if dbPort == "" {
+		dbPort = "5432" // Default PostgreSQL port
+	}
+	
+	dbPortInt, err := strconv.Atoi(dbPort)
+	if err != nil {
+		return nil, fmt.Errorf("invalid DB_PORT: %w", err)
+	}
+	cfg.DBPort = dbPortInt
+	
+	cfg.DBSSLMode = os.Getenv("DB_SSL_MODE")
+	if cfg.DBSSLMode == "" {
+		cfg.DBSSLMode = "disable" // Default SSL mode
+	}
+	{{- end}}
+	
+	{{if (call .HasFeature "basic-auth") -}}
+	// Basic auth configuration
+	cfg.AuthUsername = os.Getenv("AUTH_USERNAME")
+	if cfg.AuthUsername == "" {
+		cfg.AuthUsername = "admin" // Default username
+	}
+	
+	cfg.AuthPassword = os.Getenv("AUTH_PASSWORD")
+	if cfg.AuthPassword == "" {
+		cfg.AuthPassword = "password" // Default password
+	}
+	{{- end}}
+	
+	{{if (call .HasFeature "email") -}}
+	// Email configuration
+	cfg.SMTPHost = os.Getenv("SMTP_HOST")
+	cfg.SMTPUsername = os.Getenv("SMTP_USERNAME")
+	cfg.SMTPPassword = os.Getenv("SMTP_PASSWORD")
+	cfg.SMTPSender = os.Getenv("SMTP_SENDER")
+	
+	smtpPort := os.Getenv("SMTP_PORT")
+	if smtpPort != "" {
+		smtpPortInt, err := strconv.Atoi(smtpPort)
+		if err != nil {
+			return nil, fmt.Errorf("invalid SMTP_PORT: %w", err)
+		}
+		cfg.SMTPPort = smtpPortInt
+	} else {
+		cfg.SMTPPort = 587 // Default SMTP port
+	}
+	{{- end}}
+	
+	return cfg, nil
+}
+{{- else -}}
+// Parse returns the application configuration from command-line flags
+func Parse() *Config {
+	cfg := &Config{}
+	
+	// Server configuration
+	flag.IntVar(&cfg.Port, "port", 8080, "Server port")
+	flag.StringVar(&cfg.Env, "env", "development", "Environment (development, staging, production)")
+	
+	{{if eq .DatabaseType "postgresql" -}}
+	// Database configuration
+	flag.StringVar(&cfg.DBUser, "db-user", "", "Database user")
+	flag.StringVar(&cfg.DBPassword, "db-password", "", "Database password")
+	flag.StringVar(&cfg.DBName, "db-name", "", "Database name")
+	flag.StringVar(&cfg.DBHost, "db-host", "localhost", "Database host")
+	flag.IntVar(&cfg.DBPort, "db-port", 5432, "Database port")
+	flag.StringVar(&cfg.DBSSLMode, "db-sslmode", "disable", "Database SSL mode")
+	{{- end}}
+	
+	{{if (call .HasFeature "basic-auth") -}}
+	// Basic auth configuration
+	flag.StringVar(&cfg.AuthUsername, "auth-username", "admin", "Basic auth username")
+	flag.StringVar(&cfg.AuthPassword, "auth-password", "password", "Basic auth password")
+	{{- end}}
+	
+	{{if (call .HasFeature "email") -}}
+	// Email configuration
+	flag.StringVar(&cfg.SMTPHost, "smtp-host", "", "SMTP server host")
+	flag.IntVar(&cfg.SMTPPort, "smtp-port", 587, "SMTP server port")
+	flag.StringVar(&cfg.SMTPUsername, "smtp-username", "", "SMTP username")
+	flag.StringVar(&cfg.SMTPPassword, "smtp-password", "", "SMTP password")
+	flag.StringVar(&cfg.SMTPSender, "smtp-sender", "", "SMTP sender email")
+	{{- end}}
+	
+	flag.Parse()
+	
+	return cfg
+}
+{{- end}}

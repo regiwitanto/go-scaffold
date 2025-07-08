@@ -1,0 +1,70 @@
+package handlers
+
+import (
+	"net/http"
+	
+	{{if eq .DatabaseType "postgresql" -}}
+	"database/sql"
+	{{- end}}
+	
+	"github.com/labstack/echo/v4"
+	
+	"{{.ModulePath}}/internal/config"
+	{{if (call .HasFeature "automatic-versioning") -}}
+	"{{.ModulePath}}/internal/version"
+	{{- end}}
+)
+
+// WebHandler handles web requests
+type WebHandler struct {
+	{{if eq .DatabaseType "postgresql" -}}
+	DB  *sql.DB
+	{{- end}}
+	Cfg *config.Config
+}
+
+// NewWebHandler creates a new web handler
+func NewWebHandler({{if eq .DatabaseType "postgresql"}}db *sql.DB, {{end}}cfg *config.Config) *WebHandler {
+	return &WebHandler{
+		{{if eq .DatabaseType "postgresql" -}}
+		DB:  db,
+		{{- end}}
+		Cfg: cfg,
+	}
+}
+
+// Home handles the home page
+func (h *WebHandler) Home(c echo.Context) error {
+	data := map[string]interface{}{
+		"Title": "Home",
+		"Env":   h.Cfg.Env,
+	}
+	
+	return c.Render(http.StatusOK, "home.html", data)
+}
+
+// About handles the about page
+func (h *WebHandler) About(c echo.Context) error {
+	data := map[string]interface{}{
+		"Title": "About",
+		"Env":   h.Cfg.Env,
+		{{if (call .HasFeature "automatic-versioning") -}}
+		"Version": version.Version,
+		"Build":   version.BuildID,
+		{{- end}}
+	}
+	
+	return c.Render(http.StatusOK, "about.html", data)
+}
+
+{{if (call .HasFeature "basic-auth") -}}
+// AdminDashboard handles the admin dashboard page
+func (h *WebHandler) AdminDashboard(c echo.Context) error {
+	data := map[string]interface{}{
+		"Title": "Admin Dashboard",
+		"Env":   h.Cfg.Env,
+	}
+	
+	return c.Render(http.StatusOK, "admin/dashboard.html", data)
+}
+{{- end}}

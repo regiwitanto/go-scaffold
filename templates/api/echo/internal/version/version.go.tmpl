@@ -1,0 +1,10 @@
+package version
+
+// These variables will be set at build time using -ldflags
+var (
+	// Version is the application version
+	Version = "dev"
+	
+	// BuildID is the build identifier (timestamp or commit hash)
+	BuildID = "unknown"
+)

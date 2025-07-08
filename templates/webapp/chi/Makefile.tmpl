@@ -12,12 +12,12 @@ all: build
 # Build the application
 build:
 	@echo "Building application..."
-	go build ${GOFLAGS} -o ${BINARY_NAME} ./cmd/api
+	go build ${GOFLAGS} -o ${BINARY_NAME} ./cmd/web
 
 # Run the application
 run:
 	@echo "Running application..."
-	go run ./cmd/api
+	go run ./cmd/web
 
 # Run tests
 test:

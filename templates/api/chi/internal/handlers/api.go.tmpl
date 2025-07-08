@@ -1,62 +1,61 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
-
+	
+	{{if eq .DatabaseType "postgresql" -}}
+	"database/sql"
+	{{- end}}
+	
 	"github.com/go-chi/chi/v5"
+	
+	"{{.ModulePath}}/internal/config"
+	{{if (call .HasFeature "automatic-versioning") -}}
+	"{{.ModulePath}}/internal/version"
+	{{- end}}
 )
 
-// NewAPIv1Router returns a router for API v1 endpoints
-func NewAPIv1Router() chi.Router {
-	r := chi.NewRouter()
-
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"message":"Welcome to the API"}`))
-	})
-
-	// Sample resource endpoints
-	r.Route("/items", func(r chi.Router) {
-		r.Get("/", handleGetItems)
-		r.Post("/", handleCreateItem)
-		r.Route("/{id}", func(r chi.Router) {
-			r.Get("/", handleGetItem)
-			r.Put("/", handleUpdateItem)
-			r.Delete("/", handleDeleteItem)
-		})
-	})
-
-	return r
+// APIHandler handles API requests
+type APIHandler struct {
+	{{if eq .DatabaseType "postgresql" -}}
+	DB  *sql.DB
+	{{- end}}
+	Cfg *config.Config
 }
 
-func handleGetItems(w http.ResponseWriter, r *http.Request) {
+// NewAPIHandler creates a new API handler
+func NewAPIHandler({{if eq .DatabaseType "postgresql"}}db *sql.DB, {{end}}cfg *config.Config) *APIHandler {
+	return &APIHandler{
+		{{if eq .DatabaseType "postgresql" -}}
+		DB:  db,
+		{{- end}}
+		Cfg: cfg,
+	}
+}
+
+// HealthCheck handles health check requests
+func (h *APIHandler) HealthCheck(w http.ResponseWriter, r *http.Request) {
+	resp := map[string]string{
+		"status": "ok",
+		"environment": h.Cfg.Env,
+	}
+	
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"items":[]}`))
+	json.NewEncoder(w).Encode(resp)
 }
 
-func handleCreateItem(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte(`{"id":"1","message":"Item created"}`))
-}
-
-func handleGetItem(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"id":"` + id + `","name":"Sample Item"}`))
-}
-
-func handleUpdateItem(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+{{if (call .HasFeature "automatic-versioning") -}}
+// Status returns version and build information
+func (h *APIHandler) Status(w http.ResponseWriter, r *http.Request) {
+	resp := map[string]string{
+		"version": version.Version,
+		"build":   version.BuildID,
+	}
+	
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"id":"` + id + `","message":"Item updated"}`))
+	json.NewEncoder(w).Encode(resp)
 }
-
-func handleDeleteItem(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusNoContent)
-}
+{{- end}}

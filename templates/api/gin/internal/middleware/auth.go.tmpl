@@ -1,0 +1,28 @@
+package middleware
+
+import (
+	"net/http"
+	
+	"github.com/gin-gonic/gin"
+)
+
+// BasicAuth implements HTTP Basic Authentication for Gin
+func BasicAuth(username, password string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Skip authentication for health check endpoint
+		if c.Request.URL.Path == "/api/health" {
+			c.Next()
+			return
+		}
+		
+		// Get credentials from request
+		user, pass, ok := c.Request.BasicAuth()
+		if !ok || user != username || pass != password {
+			c.Header("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+		
+		c.Next()
+	}
+}

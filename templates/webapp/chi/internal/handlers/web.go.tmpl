@@ -1,0 +1,84 @@
+package handlers
+
+import (
+	"net/http"
+	
+	{{if eq .DatabaseType "postgresql" -}}
+	"database/sql"
+	{{- end}}
+	
+	"github.com/go-chi/chi/v5"
+	
+	"{{.ModulePath}}/internal/config"
+	"{{.ModulePath}}/internal/templates"
+	{{if (call .HasFeature "automatic-versioning") -}}
+	"{{.ModulePath}}/internal/version"
+	{{- end}}
+)
+
+// WebHandler handles web requests
+type WebHandler struct {
+	{{if eq .DatabaseType "postgresql" -}}
+	DB  *sql.DB
+	{{- end}}
+	Cfg *config.Config
+}
+
+// NewWebHandler creates a new web handler
+func NewWebHandler({{if eq .DatabaseType "postgresql"}}db *sql.DB, {{end}}cfg *config.Config) *WebHandler {
+	return &WebHandler{
+		{{if eq .DatabaseType "postgresql" -}}
+		DB:  db,
+		{{- end}}
+		Cfg: cfg,
+	}
+}
+
+// Home handles the home page
+func (h *WebHandler) Home(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{
+		"Title": "Home",
+		"Env":   h.Cfg.Env,
+	}
+	
+	if err := templates.Render(w, "home.html", data); err != nil {
+		http.Error(w, "Error rendering template", http.StatusInternalServerError)
+		return
+	}
+}
+
+// About handles the about page
+func (h *WebHandler) About(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{
+		"Title": "About",
+		"Env":   h.Cfg.Env,
+		{{if (call .HasFeature "automatic-versioning") -}}
+		"Version": version.Version,
+		"Build":   version.BuildID,
+		{{- end}}
+	}
+	
+	if err := templates.Render(w, "about.html", data); err != nil {
+		http.Error(w, "Error rendering template", http.StatusInternalServerError)
+		return
+	}
+}
+
+{{if (call .HasFeature "basic-auth") -}}
+// AdminDashboard handles the admin dashboard page
+func (h *WebHandler) AdminDashboard(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{
+		"Title": "Admin Dashboard",
+		"Env":   h.Cfg.Env,
+		{{if (call .HasFeature "automatic-versioning") -}}
+		"Version": version.Version,
+		"Build":   version.BuildID,
+		{{- end}}
+	}
+	
+	if err := templates.Render(w, "admin/dashboard.html", data); err != nil {
+		http.Error(w, "Error rendering template", http.StatusInternalServerError)
+		return
+	}
+}
+{{- end}}

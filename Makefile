@@ -8,7 +8,7 @@ all: clean build
 
 build: ## Build the application
 	@echo "Building $(APP_NAME)..."
-	go build -o $(BUILD_DIR)/$(APP_NAME) -v
+	go build -o $(BUILD_DIR)/$(APP_NAME) -v ./cmd/scaffold
 
 clean: ## Clean build artifacts
 	@echo "Cleaning..."
@@ -26,7 +26,7 @@ test-cover: ## Run tests with coverage
 
 run: ## Run the application
 	@echo "Running $(APP_NAME)..."
-	go run .
+	go run ./cmd/scaffold
 
 run-dev: ## Run the application in development mode (requires air)
 	@echo "Running $(APP_NAME) in development mode..."

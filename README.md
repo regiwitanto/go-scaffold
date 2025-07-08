@@ -16,38 +16,46 @@ This project is a Go backend service built with Echo framework using clean archi
 - **ZIP Generation**: Create downloadable archives of generated code
 - **Web Interface**: User-friendly web interface to configure and generate scaffolds
 
-## Project Structure (Planned)
+## Project Structure
 
 ```
-go-scaffold/
-├── cmd/
-│   └── api/
-│       └── main.go                   # Application entry point
-├── internal/
-│   ├── domain/                       # Domain layer (core business logic)
-│   │   ├── model/                    # Domain models/entities
-│   │   │   ├── scaffold.go           # Scaffold configuration model
-│   │   │   └── template.go           # Template model
-│   │   ├── repository/               # Repository interfaces
-│   │   │   └── template_repository.go # Template repository interface
-│   │   └── service/                  # Service interfaces
-│   │       └── generator_service.go  # Generator service interface
-│   ├── application/                  # Application layer (use cases)
-│   │   ├── generator/                # Code generation implementation
-│   │   │   ├── api.go                # API scaffolds
-│   │   │   ├── webapp.go             # Web app scaffolds
-│   │   │   └── utils.go              # Shared utilities
-│   │   └── service/                  # Service implementations
-│   │       └── generator_service.go  # Generator service implementation
-│   ├── infrastructure/               # Infrastructure layer
-│   │   ├── storage/                  # Storage implementation
-│   │   │   ├── template/             # Template storage
-│   │   │   │   └── filesystem.go     # Filesystem-based template storage
-│   │   │   └── output/               # Output storage
-│   │   │       └── zip.go            # ZIP file generation
-│   │   └── template/                 # Template engine
-│   │       └── engine.go             # Template processing
-│   └── interfaces/                   # Interface layer
+echo-scaffold/
+├── cmd/                      # Main applications of the project
+│   └── scaffold/             # The scaffold generator app
+│       ├── main.go           # Entry point for the scaffold generator
+│       └── main_test.go      # Tests for main.go
+├── docs/                     # Documentation
+│   └── swagger.go            # OpenAPI/Swagger documentation
+├── internal/                 # Private application code
+│   ├── application/          # Application layer (use cases)
+│   │   └── service/          # Application services
+│   ├── domain/               # Domain layer (core business logic)
+│   │   ├── model/            # Domain models/entities
+│   │   │   ├── scaffold.go   # Scaffold configuration model
+│   │   │   └── template.go   # Template model
+│   │   ├── repository/       # Repository interfaces
+│   │   └── service/          # Domain service interfaces
+│   ├── infrastructure/       # Infrastructure layer (implementations)
+│   │   └── storage/          # Storage implementations
+│   │       ├── scaffold/     # Scaffold storage implementation
+│   │       └── template/     # Template storage implementation
+│   └── interfaces/           # Interface layer (adapters)
+│       └── api/              # API interfaces
+│           ├── handler/      # HTTP handlers
+│           └── routes/       # Route definitions
+├── templates/                # Scaffold templates
+│   ├── api/                  # API templates
+│   │   ├── chi/              # Chi router templates
+│   │   ├── echo/             # Echo router templates
+│   │   ├── gin/              # Gin router templates
+│   │   └── standard/         # Standard library templates
+│   └── webapp/               # Web application templates
+├── assets/                   # Static assets
+├── Makefile                  # Build automation
+├── go.mod                    # Go module definition
+├── go.sum                    # Go module checksums
+├── .env                      # Environment variables
+└── .env.example              # Example environment configuration
 │       ├── api/                      # API handlers
 │       │   ├── handler/              # HTTP handlers
 │       │   │   ├── generator.go      # Generator handlers

@@ -2,9 +2,11 @@ package service
 
 import (
 	"archive/zip"
+	"crypto/rand"
 	"errors"
 	"fmt"
 	"io"
+	"math/big"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -394,6 +396,18 @@ func (s *GeneratorServiceImpl) createZipArchive(dir, zipPath string) error {
 	zw := zip.NewWriter(zipFile)
 	defer zw.Close()
 
+	// Create a codebase/ directory in the zip root
+	codebaseDir := "codebase/"
+	codebaseHeader := &zip.FileHeader{
+		Name:   codebaseDir,
+		Method: zip.Deflate,
+	}
+	codebaseHeader.SetMode(0755 | os.ModeDir)
+	_, err = zw.CreateHeader(codebaseHeader)
+	if err != nil {
+		return fmt.Errorf("failed to create codebase directory in zip: %w", err)
+	}
+
 	// Walk through the directory tree
 	err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -406,17 +420,23 @@ func (s *GeneratorServiceImpl) createZipArchive(dir, zipPath string) error {
 			return fmt.Errorf("failed to create file header: %w", err)
 		}
 
-		// Set the relative path as the name in the zip
+		// Set the relative path as the name in the zip, but prefix with "codebase/"
 		relPath, err := filepath.Rel(dir, path)
 		if err != nil {
 			return fmt.Errorf("failed to get relative path: %w", err)
 		}
 
+		// Skip the root directory
+		if relPath == "." {
+			return nil
+		}
+
+		// Add "codebase/" prefix
 		if info.IsDir() {
 			// Add trailing slash to folders
-			header.Name = relPath + "/"
+			header.Name = codebaseDir + relPath + "/"
 		} else {
-			header.Name = relPath
+			header.Name = codebaseDir + relPath
 		}
 
 		// Set compression method
@@ -455,7 +475,19 @@ func (s *GeneratorServiceImpl) createZipArchive(dir, zipPath string) error {
 
 // generateID generates a unique ID for a scaffold
 func generateID() string {
-	// This is a simplified implementation
-	// In a real application, we would use a more robust ID generation method
-	return fmt.Sprintf("%d", time.Now().UnixNano())
+	// Use crypto/rand for secure random generation
+	const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
+	const length = 12
+
+	b := make([]byte, length)
+	for i := range b {
+		// Get a random index within the charset
+		n, _ := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		b[i] = charset[n.Int64()]
+	}
+
+	result := string(b)
+	fmt.Printf("Generated random ID: %s\n", result) // Debug log
+
+	return result
 }

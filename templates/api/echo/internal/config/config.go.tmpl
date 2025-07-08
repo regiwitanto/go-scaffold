@@ -1,0 +1,118 @@
+package config
+
+import (
+	{{if eq .ConfigType "env"}}
+	"log"
+	"os"
+
+	{{if (call .HasFeature "basic-auth")}}"encoding/base64"
+	"strings"{{end}}
+
+	"github.com/joho/godotenv"
+	{{else}}
+	"flag"
+	{{if (call .HasFeature "basic-auth")}}"encoding/base64"
+	"strings"{{end}}
+	{{end}}
+)
+
+// Config holds all configuration for the application
+type Config struct {
+	Port string
+	Env  string
+	{{if ne .DatabaseType "none"}}
+	Database struct {
+		User     string
+		Password string
+		Host     string
+		Port     string
+		Name     string
+		SSLMode  string
+	}
+	{{end}}
+	{{if (call .HasFeature "basic-auth")}}
+	Auth struct {
+		Username string
+		Password string
+	}
+	{{end}}
+}
+
+// Load loads the configuration from environment variables or flags
+func Load() *Config {
+	cfg := &Config{}
+
+	{{if eq .ConfigType "env"}}
+	// Load .env file if it exists
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found or error loading it. Using environment variables.")
+	}
+
+	// Server configuration
+	cfg.Port = getEnv("PORT", "8080")
+	cfg.Env = getEnv("ENV", "development")
+
+	{{if ne .DatabaseType "none"}}
+	// Database configuration
+	cfg.Database.User = getEnv("DB_USER", "postgres")
+	cfg.Database.Password = getEnv("DB_PASSWORD", "")
+	cfg.Database.Host = getEnv("DB_HOST", "localhost")
+	cfg.Database.Port = getEnv("DB_PORT", "5432")
+	cfg.Database.Name = getEnv("DB_NAME", "app")
+	cfg.Database.SSLMode = getEnv("DB_SSL_MODE", "disable")
+	{{end}}
+
+	{{if (call .HasFeature "basic-auth")}}
+	// Authentication configuration
+	authString := getEnv("BASIC_AUTH", "admin:password")
+	parts := strings.Split(authString, ":")
+	if len(parts) == 2 {
+		cfg.Auth.Username = parts[0]
+		cfg.Auth.Password = parts[1]
+	}
+	{{end}}
+	{{else}}
+	// Server configuration
+	flag.StringVar(&cfg.Port, "port", "8080", "Port to run the server on")
+	flag.StringVar(&cfg.Env, "env", "development", "Environment (development, production)")
+
+	{{if ne .DatabaseType "none"}}
+	// Database configuration
+	flag.StringVar(&cfg.Database.User, "db-user", "postgres", "Database user")
+	flag.StringVar(&cfg.Database.Password, "db-password", "", "Database password")
+	flag.StringVar(&cfg.Database.Host, "db-host", "localhost", "Database host")
+	flag.StringVar(&cfg.Database.Port, "db-port", "5432", "Database port")
+	flag.StringVar(&cfg.Database.Name, "db-name", "app", "Database name")
+	flag.StringVar(&cfg.Database.SSLMode, "db-ssl-mode", "disable", "Database SSL mode")
+	{{end}}
+
+	{{if (call .HasFeature "basic-auth")}}
+	// Authentication configuration
+	var authString string
+	flag.StringVar(&authString, "basic-auth", "admin:password", "Basic auth credentials (username:password)")
+	
+	flag.Parse()
+	
+	parts := strings.Split(authString, ":")
+	if len(parts) == 2 {
+		cfg.Auth.Username = parts[0]
+		cfg.Auth.Password = parts[1]
+	}
+	{{else}}
+	flag.Parse()
+	{{end}}
+	{{end}}
+
+	return cfg
+}
+
+{{if eq .ConfigType "env"}}
+// getEnv gets an environment variable or returns a default value
+func getEnv(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
+}
+{{end}}

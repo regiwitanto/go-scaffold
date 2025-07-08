@@ -1,0 +1,25 @@
+package middleware
+
+import (
+	"{{.ModulePath}}/internal/config"
+	
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+)
+
+// BasicAuth returns a basic auth middleware
+func BasicAuth(cfg *config.Config) echo.MiddlewareFunc {
+	return middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
+		// Skip authentication for health check
+		if c.Path() == "/api/health" {
+			return true, nil
+		}
+		
+		// Check credentials
+		if username == cfg.Auth.Username && password == cfg.Auth.Password {
+			return true, nil
+		}
+		
+		return false, nil
+	})
+}

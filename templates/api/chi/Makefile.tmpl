@@ -42,14 +42,14 @@ lint:
 	@echo "Linting code..."
 	golangci-lint run
 
-{{if .HasFeature "live-reload"}}
+{{- if (call .HasFeature "live-reload") }}
 # Run with live reload
 dev:
 	@echo "Running with live reload..."
 	air
-{{end}}
+{{- end}}
 
-{{if .HasFeature "sql-migrations"}}
+{{- if (call .HasFeature "sql-migrations") }}
 # Database migration commands
 migrate-up:
 	@echo "Running database migrations..."

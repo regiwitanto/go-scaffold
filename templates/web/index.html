@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Echo Scaffold - Go Application Generator</title>
+    <link rel="stylesheet" href="/static/css/style.css">
     <style>
         :root {
             --primary-color: #0077cc;
@@ -458,6 +459,14 @@
                         <div class="spinner"></div>
                         <p>Generating your project scaffold...</p>
                     </div>
+                    
+                    <div class="success-message" id="success-message" style="display:none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        <p>Project successfully generated! Your download should start automatically.</p>
+                    </div>
                 </div>
             </div>
             
@@ -551,25 +560,55 @@
             async function loadFeatures() {
                 try {
                     const response = await fetch('/api/features');
+                    if (!response.ok) {
+                        throw new Error(`API returned status: ${response.status}`);
+                    }
+                    
                     const data = await response.json();
+                    console.log("Features loaded:", data);
                     
                     const featuresContainer = document.getElementById('features-container');
                     // Remove loader
                     featuresContainer.querySelector('.loader').classList.remove('active');
                     
+                    // Check if we got features back
+                    if (!data.features || !Array.isArray(data.features)) {
+                        throw new Error('Invalid features data structure');
+                    }
+                    
                     // Add regular features
-                    data.regularFeatures.forEach(feature => {
+                    data.features.forEach(feature => {
                         featuresContainer.appendChild(createFeatureItem(feature, false));
                     });
                     
                     // Add premium features
-                    data.premiumFeatures.forEach(feature => {
-                        featuresContainer.appendChild(createFeatureItem(feature, true));
-                    });
+                    if (data.premiumFeatures && Array.isArray(data.premiumFeatures)) {
+                        data.premiumFeatures.forEach(feature => {
+                            featuresContainer.appendChild(createFeatureItem(feature, true));
+                        });
+                    }
+                    
+                    // If no features found, use mock data for demonstration
+                    if (data.features.length === 0 && (!data.premiumFeatures || data.premiumFeatures.length === 0)) {
+                        console.log("Using mock feature data");
+                        // Load mock data script
+                        const script = document.createElement('script');
+                        script.src = '/static/js/mock-data.js';
+                        script.onload = function() {
+                            // Use mock data once loaded
+                            mockFeatures.features.forEach(feature => {
+                                featuresContainer.appendChild(createFeatureItem(feature, false));
+                            });
+                            mockFeatures.premiumFeatures.forEach(feature => {
+                                featuresContainer.appendChild(createFeatureItem(feature, true));
+                            });
+                        };
+                        document.head.appendChild(script);
+                    }
                 } catch (error) {
                     console.error('Error loading features:', error);
                     const featuresContainer = document.getElementById('features-container');
-                    featuresContainer.innerHTML = '<p>Failed to load features. Please refresh the page.</p>';
+                    featuresContainer.innerHTML = '<p>Failed to load features. Please refresh the page. Error: ' + error.message + '</p>';
                 }
             }
             
@@ -689,8 +728,22 @@
                     const result = await response.json();
                     
                     if (response.ok) {
-                        // Redirect to download
-                        window.location.href = `/api/download/${result.id}`;
+                        // Show success message
+                        document.getElementById('generating-loader').classList.remove('active');
+                        document.getElementById('success-message').style.display = 'block';
+                        
+                        // Start download after a short delay
+                        setTimeout(() => {
+                            window.location.href = `/api/download/${result.id}`;
+                            
+                            // Reset loading state after download starts
+                            setTimeout(() => {
+                                nextBtn.disabled = false;
+                                prevBtn.disabled = false;
+                                document.getElementById('generating-loader').classList.remove('active');
+                                // Don't hide success message
+                            }, 1000);
+                        }, 500);
                     } else {
                         alert(`Error: ${result.error || 'Failed to generate scaffold'}`);
                         nextBtn.disabled = false;

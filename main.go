@@ -24,6 +24,16 @@ func main() {
 	e := echo.New()
 	e.HideBanner = true
 
+	// Create assets directory if it doesn't exist
+	if err := os.MkdirAll("assets", 0755); err != nil {
+		log.Fatalf("Failed to create assets directory: %v", err)
+	}
+
+	// Create assets/js directory if it doesn't exist
+	if err := os.MkdirAll("assets/js", 0755); err != nil {
+		log.Fatalf("Failed to create assets/js directory: %v", err)
+	}
+
 	// Set up temp directory for scaffold generation
 	tempDir := os.Getenv("TEMP_DIR")
 	if tempDir == "" {

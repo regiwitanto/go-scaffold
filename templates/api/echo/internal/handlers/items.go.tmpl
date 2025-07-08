@@ -1,0 +1,104 @@
+package handlers
+
+import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+)
+
+// ItemsHandler handles item-related API requests
+type ItemsHandler struct {
+}
+
+// NewItemsHandler creates a new items handler
+func NewItemsHandler() *ItemsHandler {
+	return &ItemsHandler{}
+}
+
+// GetItems handles the get items endpoint
+// @Summary Get all items
+// @Description Get a list of all items
+// @Tags items
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /api/items [get]
+func (h *ItemsHandler) GetItems(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"items": []interface{}{
+			map[string]interface{}{
+				"id":   "1",
+				"name": "Item 1",
+			},
+			map[string]interface{}{
+				"id":   "2",
+				"name": "Item 2",
+			},
+		},
+	})
+}
+
+// CreateItem handles the create item endpoint
+// @Summary Create a new item
+// @Description Create a new item with the provided data
+// @Tags items
+// @Accept json
+// @Produce json
+// @Success 201 {object} map[string]interface{}
+// @Router /api/items [post]
+func (h *ItemsHandler) CreateItem(c echo.Context) error {
+	return c.JSON(http.StatusCreated, map[string]interface{}{
+		"id":      "3",
+		"message": "Item created successfully",
+	})
+}
+
+// GetItem handles the get item endpoint
+// @Summary Get an item by ID
+// @Description Get a specific item by its ID
+// @Tags items
+// @Param id path string true "Item ID"
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /api/items/{id} [get]
+func (h *ItemsHandler) GetItem(c echo.Context) error {
+	id := c.Param("id")
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"id":          id,
+		"name":        "Sample Item",
+		"description": "This is a sample item",
+		"created_at":  "2023-01-01T00:00:00Z",
+	})
+}
+
+// UpdateItem handles the update item endpoint
+// @Summary Update an item
+// @Description Update an existing item with the provided data
+// @Tags items
+// @Param id path string true "Item ID"
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /api/items/{id} [put]
+func (h *ItemsHandler) UpdateItem(c echo.Context) error {
+	id := c.Param("id")
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"id":      id,
+		"message": "Item updated successfully",
+	})
+}
+
+// DeleteItem handles the delete item endpoint
+// @Summary Delete an item
+// @Description Delete an item by its ID
+// @Tags items
+// @Param id path string true "Item ID"
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /api/items/{id} [delete]
+func (h *ItemsHandler) DeleteItem(c echo.Context) error {
+	id := c.Param("id")
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"id":      id,
+		"message": "Item deleted successfully",
+	})
+}

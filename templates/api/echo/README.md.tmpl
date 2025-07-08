@@ -1,0 +1,89 @@
+# {{.ModulePath}}
+
+A Go API built with the Echo framework.
+
+## Prerequisites
+
+- Go 1.16 or higher
+- PostgreSQL {{if eq .DatabaseType "postgresql"}}(required){{else}}(optional){{end}}
+- MySQL {{if eq .DatabaseType "mysql"}}(required){{else}}(optional){{end}}
+- SQLite {{if eq .DatabaseType "sqlite"}}(required){{else}}(optional){{end}}
+
+## Getting Started
+
+### Configuration
+
+{{if eq .ConfigType "env"}}
+This application uses environment variables for configuration. Create a `.env` file in the root directory or set them in your environment:
+
+```bash
+# Server Configuration
+PORT=8080
+ENV=development
+
+{{if ne .DatabaseType "none"}}# Database Configuration
+DB_USER=postgres
+DB_PASSWORD=password
+DB_NAME=myapp
+DB_HOST=localhost
+DB_PORT=5432
+DB_SSL_MODE=disable{{end}}
+```
+{{else}}
+This application uses command-line flags for configuration:
+
+```bash
+./{{if .Binary}}{{.Binary}}{{else}}app{{end}} --port=8080 --env=development {{if ne .DatabaseType "none"}}--db-user=postgres --db-password=password --db-name=myapp --db-host=localhost --db-port=5432{{end}}
+```
+{{end}}
+
+### Running the Application
+
+```bash
+# Build and run the application
+make run
+
+# Or use live reload during development
+{{if (call .HasFeature "live-reload")}}make dev{{else}}# Install air first: go install github.com/cosmtrek/air@latest
+air{{end}}
+```
+
+### API Endpoints
+
+- `GET /api/health` - Health check endpoint
+- `GET /api/status` - Application status
+
+{{if (call .HasFeature "basic-auth")}}
+## Authentication
+
+This API uses basic authentication. Include the following header with your requests:
+
+```
+Authorization: Basic {base64-encoded-credentials}
+```
+{{end}}
+
+## Project Structure
+
+```
+.
+├── cmd/
+│   └── api/                  # Application entry point
+│       └── main.go
+├── internal/
+{{if ne .DatabaseType "none"}}│   ├── database/             # Database connection and models
+│   │   └── db.go
+{{end}}│   ├── handlers/             # HTTP handlers
+│   │   └── api.go
+{{if (call .HasFeature "basic-auth")}}│   ├── middleware/           # HTTP middleware
+│   │   └── auth.go
+{{end}}│   ├── config/              # Configuration handling
+│   │   └── config.go
+{{if (call .HasFeature "sql-migrations")}}├── migrations/             # SQL migrations
+{{end}}├── Makefile                # Build automation
+└── README.md                # Documentation
+```
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

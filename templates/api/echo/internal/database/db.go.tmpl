@@ -1,0 +1,60 @@
+package database
+
+import (
+	"database/sql"
+	"fmt"
+
+	"{{.ModulePath}}/internal/config"
+
+	{{if eq .DatabaseType "postgresql"}}_ "github.com/lib/pq"{{end}}
+	{{if eq .DatabaseType "mysql"}}_ "github.com/go-sql-driver/mysql"{{end}}
+	{{if eq .DatabaseType "sqlite"}}_ "github.com/mattn/go-sqlite3"{{end}}
+)
+
+// Connect establishes a database connection
+func Connect(cfg *config.Config) (*sql.DB, error) {
+	var db *sql.DB
+	var err error
+
+	{{if eq .DatabaseType "postgresql"}}
+	// PostgreSQL connection string
+	connStr := fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		cfg.Database.Host,
+		cfg.Database.Port,
+		cfg.Database.User,
+		cfg.Database.Password,
+		cfg.Database.Name,
+		cfg.Database.SSLMode,
+	)
+	db, err = sql.Open("postgres", connStr)
+	{{else if eq .DatabaseType "mysql"}}
+	// MySQL connection string
+	connStr := fmt.Sprintf(
+		"%s:%s@tcp(%s:%s)/%s?parseTime=true",
+		cfg.Database.User,
+		cfg.Database.Password,
+		cfg.Database.Host,
+		cfg.Database.Port,
+		cfg.Database.Name,
+	)
+	db, err = sql.Open("mysql", connStr)
+	{{else if eq .DatabaseType "sqlite"}}
+	// SQLite connection string
+	db, err = sql.Open("sqlite3", cfg.Database.Name)
+	{{else}}
+	// No database selected
+	return nil, nil
+	{{end}}
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to open database connection: %w", err)
+	}
+
+	// Test the connection
+	if err = db.Ping(); err != nil {
+		return nil, fmt.Errorf("failed to ping database: %w", err)
+	}
+
+	return db, nil
+}

@@ -1,0 +1,18 @@
+.success-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #d4edda;
+    border-radius: 4px;
+    color: #155724;
+}
+
+.success-message svg {
+    color: #28a745;
+    margin-bottom: 10px;
+    width: 40px;
+    height: 40px;
+}

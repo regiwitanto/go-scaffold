@@ -18,6 +18,8 @@ func SetupRoutes(e *echo.Echo, generatorHandler *handler.GeneratorHandler) {
 
 	// Serve static files
 	e.Static("/static", "assets")
+	e.Static("/static/js", "assets/js")
+	e.Static("/static/css", "assets/css")
 
 	// Web UI routes
 	e.GET("/", func(c echo.Context) error {

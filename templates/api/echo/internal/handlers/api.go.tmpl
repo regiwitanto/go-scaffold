@@ -1,29 +1,64 @@
 package handlers
 
 import (
+	"database/sql"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
 
-// RegisterAPIRoutes registers all API routes
-func RegisterAPIRoutes(g *echo.Group) {
-	v1 := g.Group("/v1")
-	
-	// Register all API v1 routes
-	v1.GET("", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]string{
-			"message": "Welcome to the API",
-		})
-	})
+// APIHandler handles API requests
+type APIHandler struct {
+	db *sql.DB
+}
 
-	// Items routes
-	items := v1.Group("/items")
-	items.GET("", getItems)
-	items.POST("", createItem)
-	items.GET("/:id", getItem)
-	items.PUT("/:id", updateItem)
-	items.DELETE("/:id", deleteItem)
+// NewAPIHandler creates a new API handler
+func NewAPIHandler(db *sql.DB) *APIHandler {
+	return &APIHandler{
+		db: db,
+	}
+}
+
+// HealthCheck handles the health check endpoint
+// @Summary Health Check
+// @Description Check if the API is running
+// @Tags system
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Router /api/health [get]
+func (h *APIHandler) HealthCheck(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]string{
+		"status": "OK",
+		"time":   time.Now().Format(time.RFC3339),
+	})
+}
+
+// Status handles the status endpoint
+// @Summary API Status
+// @Description Get the API status with more details
+// @Tags system
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /api/status [get]
+func (h *APIHandler) Status(c echo.Context) error {
+	{{if ne .DatabaseType "none"}}
+	// Check database connection if available
+	dbStatus := "unavailable"
+	if h.db != nil {
+		if err := h.db.Ping(); err == nil {
+			dbStatus = "connected"
+		}
+	}
+	{{end}}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"status": "OK",
+		"time":   time.Now().Format(time.RFC3339),
+		"api_version": "1.0.0",
+		{{if ne .DatabaseType "none"}}"database": dbStatus,{{end}}
+		"environment": "{{.ConfigType}}",
+	})
 }
 
 // Handler functions

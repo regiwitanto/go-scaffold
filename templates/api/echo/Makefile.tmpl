@@ -1,0 +1,55 @@
+# Binary name
+BINARY_NAME={{if .Binary}}{{.Binary}}{{else}}app{{end}}
+
+# Go build flags
+GOFLAGS=-trimpath
+
+.PHONY: all build run test clean help
+
+all: build ## Build the application (default)
+
+build: ## Build the application
+	@echo "Building application..."
+	go build ${GOFLAGS} -o ${BINARY_NAME} ./cmd/api
+
+run: ## Run the application
+	@echo "Running application..."
+	go run ./cmd/api
+
+test: ## Run tests
+	@echo "Running tests..."
+	go test -v ./...
+
+test-coverage: ## Run tests with coverage
+	@echo "Running tests with coverage..."
+	go test -cover -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out
+
+clean: ## Clean build artifacts
+	@echo "Cleaning build artifacts..."
+	go clean
+	rm -f ${BINARY_NAME}
+	rm -f coverage.out
+
+{{- if (call .HasFeature "live-reload") }}
+dev: ## Run with live reload
+	@echo "Running with live reload..."
+	air
+{{- end}}
+
+{{- if (call .HasFeature "sql-migrations") }}
+# Database migrations
+migrate-up: ## Run database migrations
+	migrate -path ./migrations -database "${DATABASE_URL}" up
+
+migrate-down: ## Rollback database migrations
+	migrate -path ./migrations -database "${DATABASE_URL}" down
+{{- end}}
+
+help: ## Show this help
+	@echo "Usage: make [target]"
+	@echo ""
+	@echo "Targets:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-12s\033[0m %s\n", $$1, $$2}'
+
+.DEFAULT_GOAL := help

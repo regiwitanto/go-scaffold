@@ -5,14 +5,12 @@ import (
 	"log"
 	"os"
 
-	{{if (call .HasFeature "basic-auth")}}"encoding/base64"
-	"strings"{{end}}
+	{{if (call .HasFeature "basic-auth")}}"strings"{{end}}
 
 	"github.com/joho/godotenv"
 	{{else}}
 	"flag"
-	{{if (call .HasFeature "basic-auth")}}"encoding/base64"
-	"strings"{{end}}
+	{{if (call .HasFeature "basic-auth")}}"strings"{{end}}
 	{{end}}
 )
 

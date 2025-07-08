@@ -58,49 +58,127 @@ This application uses command-line flags for configuration:
 {{if ne .DatabaseType "none"}}
 ### Database Setup
 
-1. Create a {{if eq .DatabaseType "postgresql"}}PostgreSQL{{else if eq .DatabaseType "mysql"}}MySQL{{else if eq .DatabaseType "sqlite"}}SQLite{{end}} database:
+#### Step-by-step Database Setup
 
-{{if eq .DatabaseType "postgresql"}}
-```bash
-createdb your_database
-```
-{{else if eq .DatabaseType "mysql"}}
-```bash
-mysql -u root -p
-CREATE DATABASE your_database;
-EXIT;
-```
-{{else if eq .DatabaseType "sqlite"}}
-```bash
-touch your_database.db
-```
-{{end}}
+1. **Install and start your database**:
+   {{if eq .DatabaseType "postgresql"}}Make sure PostgreSQL is installed and running on your system.
+   {{else if eq .DatabaseType "mysql"}}Make sure MySQL is installed and running on your system.
+   {{else if eq .DatabaseType "sqlite"}}Make sure SQLite is installed on your system.
+   {{end}}
+
+2. **Create a database**:
+   {{if eq .DatabaseType "postgresql"}}
+   ```bash
+   # Method 1: Using createdb
+   createdb your_database
+   
+   # Method 2: Using psql
+   psql -c "CREATE DATABASE your_database;"
+   ```
+   {{else if eq .DatabaseType "mysql"}}
+   ```bash
+   # Method 1: Using mysql command
+   mysql -u root -p -e "CREATE DATABASE your_database;"
+   
+   # Method 2: Using mysql interactive shell
+   mysql -u root -p
+   CREATE DATABASE your_database;
+   EXIT;
+   ```
+   {{else if eq .DatabaseType "sqlite"}}
+   ```bash
+   # SQLite database will be created automatically when the application runs
+   # But you can create it manually if needed:
+   touch your_database.db
+   ```
+   {{end}}
+
+3. **Update the database configuration**:
+   {{if eq .ConfigType "env"}}
+   Edit your `.env` file to include the correct database credentials:
+   ```
+   DB_USER={{if eq .DatabaseType "postgresql"}}postgres{{else if eq .DatabaseType "mysql"}}root{{end}}
+   DB_PASSWORD=your_password
+   DB_NAME=your_database
+   DB_HOST=localhost
+   DB_PORT={{if eq .DatabaseType "postgresql"}}5432{{else if eq .DatabaseType "mysql"}}3306{{end}}
+   {{if eq .DatabaseType "postgresql"}}DB_SSL_MODE=disable{{end}}
+   ```
+   {{else}}
+   When running the application, provide the database flags:
+   ```bash
+   ./app --db-user={{if eq .DatabaseType "postgresql"}}postgres{{else if eq .DatabaseType "mysql"}}root{{end}} --db-password=your_password --db-name=your_database --db-host=localhost --db-port={{if eq .DatabaseType "postgresql"}}5432{{else if eq .DatabaseType "mysql"}}3306{{end}}
+   ```
+   {{end}}
 
 {{if (call .HasFeature "sql-migrations")}}
-2. Run migrations{{if eq .ConfigType "env"}} (after setting the DATABASE_URL environment variable){{end}}:
-
-```bash
-{{if eq .DatabaseType "postgresql"}}export DATABASE_URL="postgres://username:password@localhost:5432/your_database?sslmode=disable"{{else if eq .DatabaseType "mysql"}}export DATABASE_URL="mysql://username:password@localhost:3306/your_database"{{else if eq .DatabaseType "sqlite"}}export DATABASE_URL="sqlite://your_database.db"{{end}}
-make migrate-up
-```
+4. **Run database migrations**:
+   ```bash
+   # Set the DATABASE_URL environment variable
+   {{if eq .DatabaseType "postgresql"}}
+   export DATABASE_URL="postgres://username:password@localhost:5432/your_database?sslmode=disable"
+   {{else if eq .DatabaseType "mysql"}}
+   export DATABASE_URL="mysql://username:password@localhost:3306/your_database"
+   {{else if eq .DatabaseType "sqlite"}}
+   export DATABASE_URL="sqlite://your_database.db"
+   {{end}}
+   
+   # Run migrations
+   make migrate-up
+   
+   # Verify migrations applied successfully
+   make migrate-status  # or use: migrate -path ./migrations -database "${DATABASE_URL}" version
+   ```
 {{end}}
+
+5. **Verify database connection**:
+   After configuring your database and starting the application, check the logs to ensure it connected successfully.
 {{end}}
 
 ### Running the Application
 
+#### Step-by-step Guide
+
+1. **Ensure dependencies are installed**:
 ```bash
-# Build and run the application
+go mod tidy
+```
+
+2. **Build and run the application**:
+```bash
+# Option 1: Build and run in one command
 make run
 
-# Or use live reload during development{{if (call .HasFeature "live-reload")}}
-make dev{{else}} (requires air: https://github.com/cosmtrek/air)
-# Install air first: go install github.com/cosmtrek/air@latest
-air{{end}}
-
-# Build the binary
+# Option 2: Build the binary first, then run it
 make build
-# Then run it
 ./{{if .Binary}}{{.Binary}}{{else}}app{{end}}
+
+# Option 3: Run with Go directly
+go run ./cmd/api
+```
+
+3. **For development with automatic reloading**:
+```bash
+{{if (call .HasFeature "live-reload")}}# Live reload is configured in this project
+make dev
+{{else}}# First install air if you haven't already
+go install github.com/cosmtrek/air@latest
+
+# Then run with air
+air
+{{end}}
+```
+
+4. **Verify the application is running**:
+```bash
+# Check the health endpoint
+{{if (call .HasFeature "basic-auth")}}curl -u username:password http://localhost:8080/api/health{{else}}curl http://localhost:8080/api/health{{end}}
+```
+
+5. **Troubleshooting**:
+   - If you see database connection errors, make sure your database is running and configured correctly
+   - If port 8080 is already in use, change the PORT in your configuration
+   - Check logs for detailed error messages
 ```
 
 ### API Endpoints

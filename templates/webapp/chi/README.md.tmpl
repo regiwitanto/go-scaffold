@@ -88,19 +88,45 @@ make migrate-up
 
 ### Running the Application
 
+#### Step-by-step Guide
+
+1. **Ensure dependencies are installed**:
 ```bash
-# Build and run the application
+go mod tidy
+```
+
+2. **Build and run the application**:
+```bash
+# Option 1: Build and run in one command
 make run
 
-# Or use live reload during development{{if (call .HasFeature "live-reload")}}
-make dev{{else}} (requires air: https://github.com/cosmtrek/air)
-# Install air first: go install github.com/cosmtrek/air@latest
-air{{end}}
-
-# Build the binary
+# Option 2: Build the binary first, then run it
 make build
-# Then run it
 ./{{if .Binary}}{{.Binary}}{{else}}app{{end}}
+
+# Option 3: Run with Go directly
+go run ./cmd/web
+```
+
+3. **For development with automatic reloading**:
+```bash
+{{if (call .HasFeature "live-reload")}}# Live reload is configured in this project
+make dev
+{{else}}# First install air if you haven't already
+go install github.com/cosmtrek/air@latest
+
+# Then run with air
+air
+{{end}}
+```
+
+4. **Access the web application**:
+   Open your browser and navigate to: http://localhost:8080
+
+5. **Troubleshooting**:
+   - If you see database connection errors, make sure your database is running and configured correctly
+   - If port 8080 is already in use, change the PORT in your configuration
+   - Check logs for detailed error messages
 ```
 
 ### Web Application

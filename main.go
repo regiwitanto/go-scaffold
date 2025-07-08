@@ -88,12 +88,12 @@ func main() {
 	if port == "" {
 		port = "8081"
 	}
-	
+
 	// Clear message to show where the server is running
 	serverURL := fmt.Sprintf("http://localhost:%s", port)
 	log.Printf("Starting server on %s", serverURL)
 	log.Printf("Web UI available at %s", serverURL)
 	log.Printf("API Documentation at %s/api-docs", serverURL)
-	
+
 	e.Logger.Fatal(e.Start(":" + port))
 }

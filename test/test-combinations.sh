@@ -1,32 +1,49 @@
 #!/bin/bash
 
-# DEPRECATED: This script has been replaced by Go-based tests.
-# Please use the new test suite instead:
-#   make test       # Run all tests
-#   make test-unit  # Run unit tests only
-#   make test-integration  # Run integration tests only
-#   make test-functional   # Run functional tests only
+# DEPRECATED: This script has been completely replaced by Go-based tests.
+# This script now forwards to the new test runner.
 
-# Set warna untuk output
+# Set color output
 GREEN="\033[0;32m"
 RED="\033[0;31m"
 YELLOW="\033[0;33m"
 NC="\033[0m" # No Color
 
 echo -e "${YELLOW}WARNING: This script is deprecated and will be removed in a future version.${NC}"
-echo -e "${YELLOW}Please use the Go-based tests instead:${NC}"
+echo -e "${YELLOW}Redirecting to the new Go-based test runner...${NC}"
+echo ""
+
+# Find the directory containing this script
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+# Path to the new test runner
+NEW_TEST_RUNNER="$SCRIPT_DIR/run-tests.sh"
+
+# Check if the new test runner exists
+if [ ! -f "$NEW_TEST_RUNNER" ]; then
+    echo -e "${RED}Error: New test runner not found at $NEW_TEST_RUNNER${NC}"
+    exit 1
+fi
+
+# Forward to the new test runner with --functional flag
+echo -e "${GREEN}Running functional tests with the new test runner...${NC}"
+"$NEW_TEST_RUNNER" --functional
+
+# Show instructions for other test options
+echo ""
+echo -e "${YELLOW}To run other tests, use one of these commands:${NC}"
+echo -e "${GREEN}  ./test/run-tests.sh --all${NC}          # Run all tests"
+echo -e "${GREEN}  ./test/run-tests.sh --unit${NC}         # Run unit tests only"
+echo -e "${GREEN}  ./test/run-tests.sh --integration${NC}  # Run integration tests only"
+echo -e "${GREEN}  ./test/run-tests.sh --functional${NC}   # Run functional tests only"
+echo -e "${GREEN}  ./test/run-tests.sh --benchmark${NC}    # Run benchmark tests"
+echo -e "${GREEN}  ./test/run-tests.sh --help${NC}         # Show more options"
+echo ""
+echo -e "${YELLOW}You can also use the Makefile targets:${NC}"
 echo -e "${GREEN}  make test${NC}            # Run all tests"
 echo -e "${GREEN}  make test-unit${NC}       # Run unit tests only"
 echo -e "${GREEN}  make test-integration${NC}# Run integration tests only"
 echo -e "${GREEN}  make test-functional${NC} # Run functional tests only"
-echo ""
-read -p "Do you want to continue with this deprecated script anyway? (y/n) " -n 1 -r
-echo ""
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${RED}Exiting.${NC}"
-    exit 1
-fi
-echo -e "${YELLOW}Continuing with deprecated script...${NC}"
 echo ""
 
 # Array untuk menyimpan hasil

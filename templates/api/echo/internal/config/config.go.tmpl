@@ -4,6 +4,7 @@ import (
 	{{if eq .ConfigType "env"}}
 	"log"
 	"os"
+	"strconv"
 
 	{{if (call .HasFeature "basic-auth")}}"strings"{{end}}
 
@@ -34,6 +35,14 @@ type Config struct {
 		Password string
 	}
 	{{end}}
+	{{if (call .HasFeature "email") -}}
+	// Email configuration
+	SMTPHost     string
+	SMTPPort     int
+	SMTPUsername string
+	SMTPPassword string
+	SMTPSender   string
+	{{- end}}
 }
 
 // Load loads the configuration from environment variables or flags
@@ -69,6 +78,15 @@ func Load() *Config {
 		cfg.Auth.Password = parts[1]
 	}
 	{{end}}
+	
+	{{if (call .HasFeature "email") -}}
+	// Email configuration
+	cfg.SMTPHost = getEnv("SMTP_HOST", "smtp.example.com")
+	cfg.SMTPPort = getEnvAsInt("SMTP_PORT", 587)
+	cfg.SMTPUsername = getEnv("SMTP_USERNAME", "")
+	cfg.SMTPPassword = getEnv("SMTP_PASSWORD", "")
+	cfg.SMTPSender = getEnv("SMTP_SENDER", "no-reply@example.com")
+	{{- end}}
 	{{else}}
 	// Server configuration
 	flag.StringVar(&cfg.Port, "port", "8080", "Port to run the server on")
@@ -88,16 +106,25 @@ func Load() *Config {
 	// Authentication configuration
 	var authString string
 	flag.StringVar(&authString, "basic-auth", "admin:password", "Basic auth credentials (username:password)")
+	{{end}}
+	
+	{{if (call .HasFeature "email") -}}
+	// Email configuration
+	flag.StringVar(&cfg.SMTPHost, "smtp-host", "smtp.example.com", "SMTP server host")
+	flag.IntVar(&cfg.SMTPPort, "smtp-port", 587, "SMTP server port")
+	flag.StringVar(&cfg.SMTPUsername, "smtp-username", "", "SMTP username")
+	flag.StringVar(&cfg.SMTPPassword, "smtp-password", "", "SMTP password")
+	flag.StringVar(&cfg.SMTPSender, "smtp-sender", "no-reply@example.com", "SMTP sender email")
+	{{- end}}
 	
 	flag.Parse()
 	
+	{{if (call .HasFeature "basic-auth")}}
 	parts := strings.Split(authString, ":")
 	if len(parts) == 2 {
 		cfg.Auth.Username = parts[0]
 		cfg.Auth.Password = parts[1]
 	}
-	{{else}}
-	flag.Parse()
 	{{end}}
 	{{end}}
 
@@ -112,5 +139,21 @@ func getEnv(key, defaultValue string) string {
 		return defaultValue
 	}
 	return value
+}
+
+// getEnvAsInt gets an environment variable as an integer or returns a default value
+func getEnvAsInt(key string, defaultValue int) int {
+	valueStr := getEnv(key, "")
+	if valueStr == "" {
+		return defaultValue
+	}
+	
+	valueInt, err := strconv.Atoi(valueStr)
+	if err != nil {
+		log.Printf("Warning: environment variable %s is not a valid integer, using default value %d\n", key, defaultValue)
+		return defaultValue
+	}
+	
+	return valueInt
 }
 {{end}}

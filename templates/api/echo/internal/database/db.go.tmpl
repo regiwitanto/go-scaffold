@@ -58,3 +58,37 @@ func Connect(cfg *config.Config) (*sql.DB, error) {
 
 	return db, nil
 }
+
+{{if (call .HasFeature "sql-migrations") -}}
+// Migrate runs database migrations
+func Migrate(cfg *config.Config) error {
+	// Implementation depends on your migration library choice
+	// Here's an example using golang-migrate
+	
+	migrationSource := "file://./migrations"
+	
+	var dsn string
+	{{if eq .DatabaseType "postgresql" -}}
+	dsn = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
+		cfg.Database.User, cfg.Database.Password, cfg.Database.Host, cfg.Database.Port, cfg.Database.Name, cfg.Database.SSLMode)
+	{{- else if eq .DatabaseType "mysql" -}}
+	dsn = fmt.Sprintf("mysql://%s:%s@tcp(%s:%s)/%s",
+		cfg.Database.User, cfg.Database.Password, cfg.Database.Host, cfg.Database.Port, cfg.Database.Name)
+	{{- else if eq .DatabaseType "sqlite" -}}
+	dsn = fmt.Sprintf("sqlite3://%s", cfg.Database.Name)
+	{{- end}}
+	
+	// You would implement the migration code here using your preferred library
+	// Example using golang-migrate:
+	// m, err := migrate.New(migrationSource, dsn)
+	// if err != nil {
+	//     return err
+	// }
+	// err = m.Up()
+	// if err != nil && err != migrate.ErrNoChange {
+	//     return err
+	// }
+	
+	return nil
+}
+{{- end}}

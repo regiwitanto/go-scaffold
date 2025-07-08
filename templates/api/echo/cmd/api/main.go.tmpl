@@ -11,6 +11,7 @@ import (
 
 	"{{.ModulePath}}/internal/config"
 	{{if ne .DatabaseType "none"}}"{{.ModulePath}}/internal/database"{{end}}
+	{{if (call .HasFeature "email")}}"{{.ModulePath}}/internal/email"{{end}}
 	"{{.ModulePath}}/internal/handlers"
 	{{if (call .HasFeature "basic-auth")}}"{{.ModulePath}}/internal/middleware"{{end}}
 

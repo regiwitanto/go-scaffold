@@ -1,0 +1,65 @@
+package email
+
+import (
+	"fmt"
+	"net/smtp"
+	"strings"
+
+	"{{.ModulePath}}/internal/config"
+)
+
+// Mailer represents an email sending service
+type Mailer struct {
+	host     string
+	port     int
+	username string
+	password string
+	sender   string
+}
+
+// NewMailer creates a new mailer with the given configuration
+func NewMailer(cfg *config.Config) *Mailer {
+	return &Mailer{
+		host:     cfg.SMTPHost,
+		port:     cfg.SMTPPort,
+		username: cfg.SMTPUsername,
+		password: cfg.SMTPPassword,
+		sender:   cfg.SMTPSender,
+	}
+}
+
+// SendEmail sends an email with the given parameters
+func (m *Mailer) SendEmail(to []string, subject, body string) error {
+	// Compose the message
+	msg := []byte(fmt.Sprintf("From: %s\r\n"+
+		"To: %s\r\n"+
+		"Subject: %s\r\n"+
+		"\r\n"+
+		"%s\r\n", m.sender, strings.Join(to, ","), subject, body))
+
+	// Connect to the SMTP server
+	addr := fmt.Sprintf("%s:%d", m.host, m.port)
+	auth := smtp.PlainAuth("", m.username, m.password, m.host)
+
+	// Send the email
+	return smtp.SendMail(addr, auth, m.sender, to, msg)
+}
+
+// SendHTMLEmail sends an HTML-formatted email with the given parameters
+func (m *Mailer) SendHTMLEmail(to []string, subject, htmlBody string) error {
+	// Compose the message with HTML content type
+	msg := []byte(fmt.Sprintf("From: %s\r\n"+
+		"To: %s\r\n"+
+		"Subject: %s\r\n"+
+		"MIME-version: 1.0\r\n"+
+		"Content-Type: text/html; charset=\"UTF-8\"\r\n"+
+		"\r\n"+
+		"%s\r\n", m.sender, strings.Join(to, ","), subject, htmlBody))
+
+	// Connect to the SMTP server
+	addr := fmt.Sprintf("%s:%d", m.host, m.port)
+	auth := smtp.PlainAuth("", m.username, m.password, m.host)
+
+	// Send the email
+	return smtp.SendMail(addr, auth, m.sender, to, msg)
+}

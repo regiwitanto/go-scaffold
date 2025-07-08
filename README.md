@@ -19,7 +19,7 @@ This project is a Go backend service built with Echo framework using clean archi
 ## Project Structure
 
 ```
-echo-scaffold/
+go-scaffold/
 ├── cmd/                      # Main applications of the project
 │   └── scaffold/             # The scaffold generator app
 │       ├── main.go           # Entry point for the scaffold generator

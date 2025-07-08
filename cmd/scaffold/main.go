@@ -38,7 +38,7 @@ func main() {
 	// Set up temp directory for scaffold generation
 	tempDir := os.Getenv("TEMP_DIR")
 	if tempDir == "" {
-		tempDir = filepath.Join(os.TempDir(), "echo-scaffold")
+		tempDir = filepath.Join(os.TempDir(), "go-scaffold")
 	}
 	if err := os.MkdirAll(tempDir, 0755); err != nil {
 		log.Fatalf("Failed to create temp directory: %v", err)

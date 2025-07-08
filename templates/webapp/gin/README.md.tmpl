@@ -1,0 +1,165 @@
+# {{.ModulePath}}
+
+A Go Web Application built with the Gin framework{{if eq .DatabaseType "postgresql"}}, featuring PostgreSQL integration{{else if eq .DatabaseType "mysql"}}, featuring MySQL integration{{else if eq .DatabaseType "sqlite"}}, featuring SQLite integration{{end}}{{if (call .HasFeature "basic-auth")}}, secure authentication{{end}}{{if (call .HasFeature "admin-makefile")}}, and development utilities{{end}}.
+
+## Prerequisites
+
+- Go 1.21 or higher
+- PostgreSQL {{if eq .DatabaseType "postgresql"}}(required){{else}}(optional){{end}}
+- MySQL {{if eq .DatabaseType "mysql"}}(required){{else}}(optional){{end}}
+- SQLite {{if eq .DatabaseType "sqlite"}}(required){{else}}(optional){{end}}
+
+## Getting Started
+
+### Installation
+
+1. Clone or download this repository
+2. Install dependencies:
+
+```bash
+go mod tidy
+```
+
+### Configuration
+
+{{if eq .ConfigType "env"}}
+This application uses environment variables for configuration. Create a `.env` file in the root directory:
+
+```bash
+# Server Configuration
+PORT=8080
+ENV=development
+
+{{if ne .DatabaseType "none"}}# Database Configuration
+DB_USER=postgres
+DB_PASSWORD=your_password
+DB_NAME=your_database
+DB_HOST=localhost
+DB_PORT=5432
+DB_SSL_MODE=disable
+{{end}}
+{{if (call .HasFeature "email")}}
+# If you're using email notifications
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USERNAME=your_username
+SMTP_PASSWORD=your_password
+SMTP_SENDER=noreply@example.com
+{{end}}
+```
+{{else}}
+This application uses command-line flags for configuration:
+
+```bash
+./{{if .Binary}}{{.Binary}}{{else}}app{{end}} --port=8080 --env=development {{if ne .DatabaseType "none"}}--db-user=postgres --db-password=your_password --db-name=your_database --db-host=localhost --db-port=5432{{end}}
+```
+{{end}}
+
+{{if ne .DatabaseType "none"}}
+### Database Setup
+
+1. Create a {{if eq .DatabaseType "postgresql"}}PostgreSQL{{else if eq .DatabaseType "mysql"}}MySQL{{else if eq .DatabaseType "sqlite"}}SQLite{{end}} database:
+
+{{if eq .DatabaseType "postgresql"}}
+```bash
+createdb your_database
+```
+{{else if eq .DatabaseType "mysql"}}
+```bash
+mysql -u root -p
+CREATE DATABASE your_database;
+EXIT;
+```
+{{else if eq .DatabaseType "sqlite"}}
+```bash
+touch your_database.db
+```
+{{end}}
+
+{{if (call .HasFeature "sql-migrations")}}
+2. Run migrations{{if eq .ConfigType "env"}} (after setting the DATABASE_URL environment variable){{end}}:
+
+```bash
+{{if eq .DatabaseType "postgresql"}}export DATABASE_URL="postgres://username:password@localhost:5432/your_database?sslmode=disable"{{else if eq .DatabaseType "mysql"}}export DATABASE_URL="mysql://username:password@localhost:3306/your_database"{{else if eq .DatabaseType "sqlite"}}export DATABASE_URL="sqlite://your_database.db"{{end}}
+make migrate-up
+```
+{{end}}
+{{end}}
+
+### Running the Application
+
+```bash
+# Build and run the application
+make run
+
+# Or use live reload during development{{if (call .HasFeature "live-reload")}}
+make dev{{else}} (requires air: https://github.com/cosmtrek/air)
+# Install air first: go install github.com/cosmtrek/air@latest
+air{{end}}
+
+# Build the binary
+make build
+# Then run it
+./{{if .Binary}}{{.Binary}}{{else}}app{{end}}
+```
+
+### Web Application
+
+After starting the application, access the web interface at:
+- http://localhost:8080 (or whatever port you configured)
+
+{{if (call .HasFeature "basic-auth")}}
+## Authentication
+
+This application uses HTTP Basic Authentication. You will be prompted for credentials when accessing the web interface.
+
+Default credentials (please change these in a production environment):
+- Username: admin
+- Password: password
+{{end}}
+
+## Project Structure
+
+```
+.
+├── cmd/
+│   └── web/                  # Application entry point
+│       └── main.go
+├── internal/
+{{if ne .DatabaseType "none"}}│   ├── database/             # Database connection and models
+│   │   └── db.go
+{{end}}│   ├── handlers/             # HTTP handlers
+│   │   └── web.go
+{{if (call .HasFeature "basic-auth")}}│   ├── middleware/           # HTTP middleware
+│   │   └── auth.go
+{{end}}│   ├── config/              # Configuration handling
+│   │   └── config.go
+{{if (call .HasFeature "sql-migrations")}}├── migrations/             # SQL migrations
+{{end}}{{if (call .HasFeature "automatic-versioning")}}├── version/               # Application versioning
+│   └── version.go
+{{end}}├── templates/              # HTML templates
+├── static/                 # Static assets (CSS, JS, images)
+├── Makefile                # Build automation
+└── README.md               # Documentation
+```
+
+{{if (call .HasFeature "admin-makefile")}}
+## Available Make Commands
+
+- `make run` - Build and run the application
+- `make build` - Build the binary
+- `make test` - Run tests
+- `make test-coverage` - Run tests with coverage report
+{{if (call .HasFeature "live-reload")}}
+- `make dev` - Run with live reload
+{{end}}
+{{if (call .HasFeature "sql-migrations")}}
+- `make migrate-up` - Run database migrations
+- `make migrate-down` - Rollback database migrations
+{{end}}
+- `make clean` - Clean build artifacts
+{{end}}
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

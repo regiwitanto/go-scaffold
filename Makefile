@@ -1,4 +1,4 @@
-APP_NAME := echo-scaffold
+APP_NAME := go-scaffold
 VERSION := 1.0.0
 BUILD_DIR := build
 

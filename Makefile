@@ -14,9 +14,21 @@ clean: ## Clean build artifacts
 	@echo "Cleaning..."
 	rm -rf $(BUILD_DIR)
 
-test: ## Run tests
-	@echo "Running tests..."
+test: ## Run all tests
+	@echo "Running all tests..."
 	go test -v ./...
+
+test-unit: ## Run unit tests only
+	@echo "Running unit tests..."
+	go test -v ./test/unit/...
+
+test-integration: ## Run integration tests only
+	@echo "Running integration tests..."
+	go test -v ./test/integration/...
+
+test-functional: ## Run functional tests only
+	@echo "Running functional tests..."
+	go test -v ./test/functional/...
 
 test-cover: ## Run tests with coverage
 	@echo "Running tests with coverage..."

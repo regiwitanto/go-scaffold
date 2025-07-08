@@ -3,7 +3,7 @@ package routes
 import (
 	"net/http"
 
-	"github.com/regiwitanto/echo-scaffold/internal/interfaces/api/handler"
+	"github.com/regiwitanto/go-scaffold/internal/interfaces/api/handler"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"

@@ -8,11 +8,11 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
-	"github.com/regiwitanto/echo-scaffold/internal/application/service"
-	"github.com/regiwitanto/echo-scaffold/internal/infrastructure/storage/scaffold"
-	"github.com/regiwitanto/echo-scaffold/internal/infrastructure/storage/template"
-	"github.com/regiwitanto/echo-scaffold/internal/interfaces/api/handler"
-	"github.com/regiwitanto/echo-scaffold/internal/interfaces/api/routes"
+	"github.com/regiwitanto/go-scaffold/internal/application/service"
+	"github.com/regiwitanto/go-scaffold/internal/infrastructure/storage/scaffold"
+	"github.com/regiwitanto/go-scaffold/internal/infrastructure/storage/template"
+	"github.com/regiwitanto/go-scaffold/internal/interfaces/api/handler"
+	"github.com/regiwitanto/go-scaffold/internal/interfaces/api/routes"
 )
 
 func main() {

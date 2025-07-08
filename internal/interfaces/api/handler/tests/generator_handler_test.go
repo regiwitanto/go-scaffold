@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/labstack/echo/v4"
-	"github.com/regiwitanto/echo-scaffold/internal/domain/model"
-	"github.com/regiwitanto/echo-scaffold/internal/interfaces/api/handler"
+	"github.com/regiwitanto/go-scaffold/internal/domain/model"
+	"github.com/regiwitanto/go-scaffold/internal/interfaces/api/handler"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

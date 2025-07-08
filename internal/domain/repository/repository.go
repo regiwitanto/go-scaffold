@@ -1,6 +1,6 @@
 package repository
 
-import "github.com/regiwitanto/echo-scaffold/internal/domain/model"
+import "github.com/regiwitanto/go-scaffold/internal/domain/model"
 
 // TemplateRepository defines the interface for template storage
 type TemplateRepository interface {

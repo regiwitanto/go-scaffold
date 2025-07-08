@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	"github.com/regiwitanto/echo-scaffold/internal/domain/model"
-	"github.com/regiwitanto/echo-scaffold/internal/domain/service"
+	"github.com/regiwitanto/go-scaffold/internal/domain/model"
+	"github.com/regiwitanto/go-scaffold/internal/domain/service"
 
 	"github.com/labstack/echo/v4"
 )

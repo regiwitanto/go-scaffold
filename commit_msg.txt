@@ -1,9 +1,0 @@
-refactor: reorganize project to follow Go standard layout
-
-- Move main.go to cmd/scaffold/main.go
-- Move main_test.go to cmd/scaffold/main_test.go
-- Move Swagger docs from internal/docs to docs/
-- Update Makefile to use new paths
-- Update README.md with new project structure
-- Clean up unnecessary files
-- Improve project organization following Go standards

@@ -1,6 +1,6 @@
 package service
 
-import "github.com/regiwitanto/echo-scaffold/internal/domain/model"
+import "github.com/regiwitanto/go-scaffold/internal/domain/model"
 
 // GeneratorService defines the interface for the scaffold generator service
 type GeneratorService interface {

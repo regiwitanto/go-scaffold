@@ -4,8 +4,8 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/regiwitanto/echo-scaffold/internal/domain/model"
-	"github.com/regiwitanto/echo-scaffold/internal/domain/repository"
+	"github.com/regiwitanto/go-scaffold/internal/domain/model"
+	"github.com/regiwitanto/go-scaffold/internal/domain/repository"
 )
 
 // InMemoryRepository implements the ScaffoldRepository interface

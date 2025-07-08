@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/regiwitanto/echo-scaffold/internal/application/service"
-	"github.com/regiwitanto/echo-scaffold/internal/domain/model"
+	"github.com/regiwitanto/go-scaffold/internal/application/service"
+	"github.com/regiwitanto/go-scaffold/internal/domain/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

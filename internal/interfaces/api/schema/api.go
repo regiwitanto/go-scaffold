@@ -2,7 +2,7 @@
 package api
 
 import (
-	"github.com/regiwitanto/echo-scaffold/internal/domain/model"
+	"github.com/regiwitanto/go-scaffold/internal/domain/model"
 )
 
 // HealthResponse represents a health check response

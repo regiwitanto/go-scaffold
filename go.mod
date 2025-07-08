@@ -1,4 +1,4 @@
-module github.com/regiwitanto/echo-scaffold
+module github.com/regiwitanto/go-scaffold
 
 go 1.23.0
 

@@ -1,0 +1,13 @@
+package version
+
+// Values set during build using -ldflags
+var (
+	// Version is the application's version
+	Version = "dev"
+	
+	// BuildID is the application's build ID (e.g., git commit hash)
+	BuildID = "unknown"
+	
+	// BuildTime is when the application was built
+	BuildTime = "unknown"
+)

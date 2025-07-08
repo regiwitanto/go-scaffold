@@ -3,21 +3,82 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"regexp"
-	"strings"
+	{{if (call .HasFeature "automatic-versioning") -}}
+	"runtime"
+	"{{.ModulePath}}/internal/version"
+	{{- end}}
+	
+	"{{.ModulePath}}/internal/config"
+	{{if eq .DatabaseType "postgresql" -}}
+	"database/sql"
+	{{- end}}
 )
 
-// Item represents a simple resource
-type Item struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+// APIHandler handles API requests
+type APIHandler struct {
+	{{if eq .DatabaseType "postgresql" -}}
+	DB  *sql.DB
+	{{- end}}
+	Cfg *config.Config
 }
 
-// RegisterRoutes registers all API routes
-func RegisterRoutes(mux *http.ServeMux) {
-	// API handler
-	mux.Handle("/api/", http.StripPrefix("/api", apiHandler()))
+// NewAPIHandler creates a new API handler
+func NewAPIHandler({{if eq .DatabaseType "postgresql"}}db *sql.DB, {{end}}cfg *config.Config) *APIHandler {
+	return &APIHandler{
+		{{if eq .DatabaseType "postgresql" -}}
+		DB:  db,
+		{{- end}}
+		Cfg: cfg,
+	}
 }
+
+// HealthCheck handles the health check endpoint
+func (h *APIHandler) HealthCheck(w http.ResponseWriter, r *http.Request) {
+	// Simple health check response
+	response := map[string]string{
+		"status": "OK",
+		"environment": h.Cfg.Env,
+	}
+	
+	{{if eq .DatabaseType "postgresql" -}}
+	// Check database connection
+	if err := h.DB.Ping(); err != nil {
+		response["status"] = "ERROR"
+		response["database"] = "disconnected"
+		w.WriteHeader(http.StatusServiceUnavailable)
+	} else {
+		response["database"] = "connected"
+	}
+	{{- end}}
+	
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+{{if (call .HasFeature "automatic-versioning") -}}
+// Status returns version and build information
+func (h *APIHandler) Status(w http.ResponseWriter, r *http.Request) {
+	// Version information response
+	response := map[string]string{
+		"version":    version.Version,
+		"build_id":   version.BuildID,
+		"build_time": version.BuildTime,
+		"go_version": runtime.Version(),
+		"os":         runtime.GOOS,
+		"arch":       runtime.GOARCH,
+		"environment": h.Cfg.Env,
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+{{- end}}
 
 func apiHandler() http.Handler {
 	mux := http.NewServeMux()

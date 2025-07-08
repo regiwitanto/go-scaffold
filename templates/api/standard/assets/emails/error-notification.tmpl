@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Error Notification</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px; padding: 15px; margin-bottom: 20px;">
+        <h2 style="color: #721c24; margin-top: 0;">Error Notification</h2>
+        <p>An error has occurred in your application.</p>
+    </div>
+    
+    <div style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px;">
+        <h3 style="margin-top: 0;">Error Details</h3>
+        <p><strong>Time:</strong> {{.Timestamp}}</p>
+        <p><strong>Environment:</strong> {{.Environment}}</p>
+        <p><strong>Error:</strong> {{.Message}}</p>
+        
+        {{if .StackTrace}}
+        <h4>Stack Trace</h4>
+        <pre style="background-color: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto;">{{.StackTrace}}</pre>
+        {{end}}
+    </div>
+    
+    <div style="margin-top: 20px; font-size: 0.9em; color: #6c757d; text-align: center;">
+        <p>This is an automated message. Please do not reply to this email.</p>
+    </div>
+</body>
+</html>

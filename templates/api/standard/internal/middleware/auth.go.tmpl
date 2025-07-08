@@ -1,0 +1,71 @@
+package middleware
+
+import (
+	"crypto/subtle"
+	"log"
+	"net/http"
+	"time"
+)
+
+{{if (call .HasFeature "basic-auth") -}}
+// BasicAuth provides HTTP Basic Authentication middleware
+func BasicAuth(username, password string) func(http.HandlerFunc) http.HandlerFunc {
+	return func(next http.HandlerFunc) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			// Get the Basic Authentication credentials
+			user, pass, ok := r.BasicAuth()
+			
+			// Check if the credentials are valid
+			if !ok || subtle.ConstantTimeCompare([]byte(user), []byte(username)) != 1 || subtle.ConstantTimeCompare([]byte(pass), []byte(password)) != 1 {
+				// Credentials don't match, return 401 Unauthorized
+				w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+			
+			// Credentials match, call the next handler
+			next(w, r)
+		}
+	}
+}
+{{- end}}
+
+{{if (call .HasFeature "access-logging") -}}
+// LogRequest is middleware that logs the incoming HTTP request
+func LogRequest(next http.Handler, logger *log.Logger) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		
+		// Create a responseWriter that captures the status code
+		rw := &responseWriter{w, http.StatusOK}
+		
+		// Call the next handler
+		next.ServeHTTP(rw, r)
+		
+		// Log the request
+		duration := time.Since(start)
+		
+		{{if eq .LogFormat "json" -}}
+		// JSON format
+		logger.Printf("{\"method\":\"%s\",\"path\":\"%s\",\"status\":%d,\"duration\":%s,\"ip\":\"%s\",\"user_agent\":\"%s\"}",
+			r.Method, r.URL.Path, rw.statusCode, duration, r.RemoteAddr, r.UserAgent())
+		{{- else -}}
+		// Plain text format
+		logger.Printf("%s %s %d %s %s %s",
+			r.Method, r.URL.Path, rw.statusCode, duration, r.RemoteAddr, r.UserAgent())
+		{{- end}}
+	})
+}
+
+// responseWriter is a wrapper for http.ResponseWriter that captures the status code
+type responseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+// WriteHeader captures the status code and delegates to the underlying ResponseWriter
+func (rw *responseWriter) WriteHeader(code int) {
+	rw.statusCode = code
+	rw.ResponseWriter.WriteHeader(code)
+}
+{{- end}}

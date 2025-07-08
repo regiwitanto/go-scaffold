@@ -1,0 +1,71 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+{{if (call .HasFeature "admin-makefile") -}}
+# Binary name from Makefile
+/{{if .Binary}}{{.Binary}}{{else}}app{{end}}
+{{- else -}}
+# Binary
+/{{if .Binary}}{{.Binary}}{{else}}app{{end}}
+{{- end}}
+
+# Build directory
+/build/
+/dist/
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+coverage.txt
+
+# Dependency directories
+/vendor/
+
+# IDE directories
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Mac OS
+.DS_Store
+
+# Log files
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+{{if eq .DatabaseType "sqlite" -}}
+# SQLite database files
+*.db
+*.sqlite
+*.sqlite3
+{{- end}}
+
+# Temporary files
+/tmp/
+/temp/
+
+# Generated files
+/generated/
+swagger.json
+swagger.yaml
+
+# Local configuration
+config.local.yml

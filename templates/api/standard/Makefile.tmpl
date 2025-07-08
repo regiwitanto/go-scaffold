@@ -1,0 +1,113 @@
+.PHONY: all build run test clean {{if (call .HasFeature "live-reload")}}dev{{end}} {{if (call .HasFeature "sql-migrations")}}migrate-up migrate-down{{end}}
+
+# Binary name
+BINARY_NAME={{if .Binary}}{{.Binary}}{{else}}app{{end}}
+
+# Build directory
+BUILD_DIR=./build
+
+# Go parameters
+GOCMD=go
+GOBUILD=$(GOCMD) build
+GOCLEAN=$(GOCMD) clean
+GOTEST=$(GOCMD) test
+GOMOD=$(GOCMD) mod
+GOGET=$(GOCMD) get
+
+# Main file
+MAIN_FILE=./cmd/api/main.go
+
+# Build flags
+BUILD_FLAGS=-v
+{{if (call .HasFeature "automatic-versioning") -}}
+VERSION?=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+BUILD_ID?=$(shell git rev-parse HEAD 2>/dev/null || echo "unknown")
+BUILD_TIME?=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+LDFLAGS=-ldflags "-X {{.ModulePath}}/internal/version.Version=$(VERSION) -X {{.ModulePath}}/internal/version.BuildID=$(BUILD_ID) -X {{.ModulePath}}/internal/version.BuildTime=$(BUILD_TIME)"
+{{- end}}
+
+# Default target
+all: test build
+
+# Build the application
+build:
+	@echo "Building $(BINARY_NAME)..."
+	@mkdir -p $(BUILD_DIR)
+	$(GOBUILD) $(BUILD_FLAGS) {{if (call .HasFeature "automatic-versioning")}}$(LDFLAGS){{end}} -o $(BUILD_DIR)/$(BINARY_NAME) $(MAIN_FILE)
+
+# Run the application
+run: build
+	@echo "Running $(BINARY_NAME)..."
+	@$(BUILD_DIR)/$(BINARY_NAME)
+
+# Test the application
+test:
+	@echo "Running tests..."
+	$(GOTEST) -v ./...
+
+# Generate test coverage
+test-coverage:
+	@echo "Running tests with coverage..."
+	$(GOTEST) -v -coverprofile=coverage.txt -covermode=atomic ./...
+	$(GOCMD) tool cover -html=coverage.txt
+
+# Clean build artifacts
+clean:
+	@echo "Cleaning up..."
+	@$(GOCLEAN)
+	@rm -rf $(BUILD_DIR)
+	@rm -f coverage.txt
+
+# Tidy modules
+tidy:
+	@echo "Tidying modules..."
+	$(GOMOD) tidy
+
+{{if (call .HasFeature "live-reload") -}}
+# Run with live reload (requires air: https://github.com/cosmtrek/air)
+dev:
+	@echo "Running with live reload..."
+	@if command -v air > /dev/null; then \
+		air; \
+	else \
+		echo "Error: 'air' not found. Install with: go install github.com/cosmtrek/air@latest"; \
+		exit 1; \
+	fi
+{{- end}}
+
+{{if (call .HasFeature "sql-migrations") -}}
+# Database migration commands (requires golang-migrate: https://github.com/golang-migrate/migrate)
+migrate-up:
+	@echo "Running migrations up..."
+	@if command -v migrate > /dev/null; then \
+		{{if eq .ConfigType "env" -}}
+		if [ -z "$$DATABASE_URL" ]; then \
+			echo "Error: DATABASE_URL environment variable not set"; \
+			exit 1; \
+		fi; \
+		migrate -path ./migrations -database "$$DATABASE_URL" up; \
+		{{- else -}}
+		migrate -path ./migrations -database "{{if eq .DatabaseType "postgresql"}}postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSL_MODE){{else if eq .DatabaseType "mysql"}}mysql://$(DB_USER):$(DB_PASSWORD)@tcp($(DB_HOST):$(DB_PORT))/$(DB_NAME){{else}}sqlite3://$(DB_PATH){{end}}" up; \
+		{{- end}} \
+	else \
+		echo "Error: 'migrate' command not found. Install golang-migrate: https://github.com/golang-migrate/migrate/tree/master/cmd/migrate"; \
+		exit 1; \
+	fi
+
+migrate-down:
+	@echo "Running migrations down..."
+	@if command -v migrate > /dev/null; then \
+		{{if eq .ConfigType "env" -}}
+		if [ -z "$$DATABASE_URL" ]; then \
+			echo "Error: DATABASE_URL environment variable not set"; \
+			exit 1; \
+		fi; \
+		migrate -path ./migrations -database "$$DATABASE_URL" down; \
+		{{- else -}}
+		migrate -path ./migrations -database "{{if eq .DatabaseType "postgresql"}}postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSL_MODE){{else if eq .DatabaseType "mysql"}}mysql://$(DB_USER):$(DB_PASSWORD)@tcp($(DB_HOST):$(DB_PORT))/$(DB_NAME){{else}}sqlite3://$(DB_PATH){{end}}" down; \
+		{{- end}} \
+	else \
+		echo "Error: 'migrate' command not found. Install golang-migrate: https://github.com/golang-migrate/migrate/tree/master/cmd/migrate"; \
+		exit 1; \
+	fi
+{{- end}}

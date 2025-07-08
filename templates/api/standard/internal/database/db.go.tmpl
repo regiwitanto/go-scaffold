@@ -1,0 +1,78 @@
+package database
+
+import (
+	"database/sql"
+	"fmt"
+	
+	"{{.ModulePath}}/internal/config"
+	
+	{{if eq .DatabaseType "postgresql" -}}
+	_ "github.com/lib/pq"
+	{{- else if eq .DatabaseType "mysql" -}}
+	_ "github.com/go-sql-driver/mysql"
+	{{- else if eq .DatabaseType "sqlite" -}}
+	_ "github.com/mattn/go-sqlite3"
+	{{- end}}
+)
+
+// Connect establishes a connection to the database
+func Connect(cfg *config.Config) (*sql.DB, error) {
+	{{if eq .DatabaseType "postgresql" -}}
+	// Build the PostgreSQL connection string
+	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBSSLMode)
+	
+	// Open a connection to the database
+	db, err := sql.Open("postgres", connStr)
+	{{- else if eq .DatabaseType "mysql" -}}
+	// Build the MySQL connection string
+	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true",
+		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
+	
+	// Open a connection to the database
+	db, err := sql.Open("mysql", connStr)
+	{{- else if eq .DatabaseType "sqlite" -}}
+	// Open a connection to the SQLite database
+	db, err := sql.Open("sqlite3", cfg.DBPath)
+	{{- end}}
+	
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
+	}
+	
+	// Check the connection
+	if err := db.Ping(); err != nil {
+		return nil, fmt.Errorf("failed to ping database: %w", err)
+	}
+	
+	return db, nil
+}
+
+{{if (call .HasFeature "sql-migrations") -}}
+// Migrate runs the database migrations
+func Migrate(cfg *config.Config) error {
+	{{if eq .DatabaseType "postgresql" -}}
+	// Build the PostgreSQL connection string
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName, cfg.DBSSLMode)
+	{{- else if eq .DatabaseType "mysql" -}}
+	// Build the MySQL connection string
+	connStr := fmt.Sprintf("mysql://%s:%s@tcp(%s:%d)/%s",
+		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
+	{{- else if eq .DatabaseType "sqlite" -}}
+	// Build the SQLite connection string
+	connStr := fmt.Sprintf("sqlite3://%s", cfg.DBPath)
+	{{- end}}
+	
+	// Implementation would use a migration tool like golang-migrate
+	// This is a simplified example - in a real application, you would:
+	// 1. Use a migration library (e.g., golang-migrate)
+	// 2. Load migration files from a directory
+	// 3. Apply the migrations
+	
+	fmt.Println("Running migrations with connection string:", connStr)
+	// In a real implementation, you would call your migration library here
+	
+	return nil
+}
+{{- end}}

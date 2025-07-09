@@ -6,6 +6,9 @@ This project is a pure Go backend service built with Echo framework using clean 
 ![GitHub top language](https://img.shields.io/github/languages/top/regiwitanto/go-scaffold)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/regiwitanto/go-scaffold)
 ![GitHub](https://img.shields.io/github/license/regiwitanto/go-scaffold)
+![GitHub issues](https://img.shields.io/github/issues/regiwitanto/go-scaffold)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/regiwitanto/go-scaffold)
+![GitHub last commit](https://img.shields.io/github/last-commit/regiwitanto/go-scaffold)
 
 ## Features
 
@@ -36,50 +39,44 @@ go-scaffold/
 │   │   └── service/          # Application services
 │   ├── domain/               # Domain layer (core business logic)
 │   │   ├── model/            # Domain models/entities
-│   │   │   ├── scaffold.go   # Scaffold configuration model
-│   │   │   └── template.go   # Template model
 │   │   ├── repository/       # Repository interfaces
 │   │   └── service/          # Domain service interfaces
 │   ├── infrastructure/       # Infrastructure layer (implementations)
 │   │   └── storage/          # Storage implementations
-│   │       ├── scaffold/     # Scaffold storage implementation
-│   │       └── template/     # Template storage implementation
-│   └── interfaces/           # Interface layer (adapters)
-│       ├── api/              # API interfaces
-│       │   ├── handler/      # HTTP handlers
-│       │   │   ├── generator.go      # Generator handlers
-│       │   │   └── template.go       # Template management handlers
-│       │   ├── middleware/           # HTTP middleware
-│       │   │   ├── logging.go        # Logging middleware
-│       │   │   └── ratelimit.go      # Rate limiting middleware
-│       │   └── routes/               # Route definitions
-│       │       └── routes.go         # API routes
-│       └── dto/                      # Data Transfer Objects
-│           └── scaffold_request.go   # Scaffold generation request DTO
-├── pkg/                              # Public packages
-│   ├── logger/                       # Logging utilities
-│   │   └── logger.go
-│   ├── archiver/                     # ZIP archive creation
-│   │   └── zip.go
-│   └── errors/                       # Error handling utilities
-│       └── errors.go
-├── templates/                        # Scaffold templates
-│   ├── api/                          # API templates
-│   │   ├── chi/                      # Chi router templates
-│   │   ├── echo/                     # Echo router templates
-│   │   ├── gin/                      # Gin router templates
-│   │   └── standard/                 # Standard library templates
-│   └── shared/                       # Shared template files
-├── test/                             # Test files
-│   ├── functional/                   # Functional tests
-│   ├── integration/                  # Integration tests
-│   └── unit/                         # Unit tests
-├── go.mod                            # Go module file
-├── go.sum                            # Go dependencies checksums
-├── Makefile                          # Build automation
-├── .env.example                      # Example environment variables
-├── .gitignore                        # Git ignore file
-└── README.md                         # Project documentation
+│   ├── interfaces/           # Interface layer (adapters)
+│   │   └── api/              # API interfaces
+│   │       ├── handler/      # HTTP handlers
+│   │       ├── routes/       # Route definitions
+│   │       └── schema/       # API schema definitions
+│   └── util/                 # Utility functions
+├── templates/                # Scaffold templates
+│   ├── api/                  # API templates
+│   │   ├── chi/              # Chi router templates
+│   │   ├── echo/             # Echo router templates
+│   │   ├── gin/              # Gin router templates
+│   │   └── standard/         # Standard library templates
+│   └── shared/               # Shared template files
+│       ├── auth/             # Authentication templates
+│       ├── db/               # Database templates
+│       └── email/            # Email templates
+├── test/                     # Test files
+│   ├── cmd/                  # Command tests
+│   ├── functional/           # Functional tests
+│   ├── integration/          # Integration tests
+│   ├── internal/             # Internal package tests
+│   ├── mocks/                # Mock implementations
+│   ├── testutil/             # Test utilities
+│   └── unit/                 # Unit tests
+├── build/                    # Build output directory
+├── go.mod                    # Go module file
+├── go.sum                    # Go dependencies checksums
+├── Makefile                  # Build automation
+├── Dockerfile                # Docker build file
+├── docker-compose.yml        # Docker Compose configuration
+├── .env.example              # Example environment variables
+├── .gitignore                # Git ignore file
+├── .gitattributes            # Git attributes file
+└── README.md                 # Project documentation
 ```
 
 ## Getting Started
@@ -89,14 +86,38 @@ go-scaffold/
 - Go 1.22+
 - Make (optional, for using the Makefile)
 
+### Building from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/regiwitanto/go-scaffold.git
+cd go-scaffold
+
+# Install dependencies
+go mod tidy
+
+# Build the application
+make build
+# or directly with Go
+go build -o build/go-scaffold ./cmd/scaffold
+```
+
 ### Configuration
 
 Create a `.env` file based on the `.env.example` or set environment variables directly:
 
 ```
+# Application Environment
 APP_ENV=development
-APP_HTTP_PORT=4000
+
+# HTTP Port for the server
+PORT=8081
+
+# Template directory path
 TEMPLATE_DIR=./templates
+
+# Temporary directory for scaffold generation
+TEMP_DIR=
 ```
 
 ### Running the Application
@@ -106,7 +127,7 @@ TEMPLATE_DIR=./templates
 go mod tidy
 
 # Run the application
-go run .
+go run ./cmd/scaffold
 
 # Or with live reload (requires air: https://github.com/cosmtrek/air)
 air
@@ -115,7 +136,7 @@ air
 The server will start on port 8081 by default. You can change this by setting the PORT environment variable:
 
 ```bash
-PORT=4000 go run .
+PORT=4000 go run ./cmd/scaffold
 ```
 
 ### Using the Application
@@ -277,6 +298,45 @@ GET /api/download/:id
 
 Returns a ZIP file containing the generated scaffold.
 
+### Workflow Example
+
+Here's a typical workflow for using Go Scaffold Generator in your development process:
+
+1. **Generate a scaffold**:
+   ```bash
+   # Generate a new API scaffold with Echo and PostgreSQL
+   curl -X POST http://localhost:8081/api/generate \
+     -H "Content-Type: application/json" \
+     -d '{
+       "appType": "api",
+       "databaseType": "postgresql",
+       "routerType": "echo",
+       "configType": "env",
+       "modulePath": "github.com/yourusername/yourproject"
+     }'
+   # Response will contain scaffold ID
+   ```
+
+2. **Download the scaffold**:
+   ```bash
+   # Download the generated scaffold
+   curl -o my-new-project.zip http://localhost:8081/api/download/scaffold-123456
+   ```
+
+3. **Extract and use**:
+   ```bash
+   # Extract the ZIP file
+   unzip my-new-project.zip -d my-new-project
+   cd my-new-project
+   
+   # Initialize Git repository
+   git init
+   
+   # Install dependencies and run
+   go mod tidy
+   go run ./cmd/api
+   ```
+
 ### Client Libraries
 
 We provide official client libraries to interact with the Go Scaffold Generator API:
@@ -321,6 +381,27 @@ Run with `docker-compose up -d`.
 
 ## Development
 
+### Testing
+
+You can run various tests with the Makefile:
+
+```bash
+# Run all tests
+make test
+
+# Run unit tests only
+make test-unit
+
+# Run integration tests only
+make test-integration
+
+# Run functional tests only
+make test-functional
+
+# Run tests with coverage
+make test-cover
+```
+
 ### Core Components
 
 1. **Template Engine**: Responsible for parsing and processing templates
@@ -359,6 +440,23 @@ The system is designed to be extensible through:
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Contributing
+
+Contributions are welcome! Here's how you can help:
+
+1. **Report bugs** by opening an issue
+2. **Suggest features** by opening an issue
+3. **Submit pull requests** with bug fixes or features
+4. **Improve documentation** by submitting pull requests
+
+Please follow these steps for contributing:
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## Acknowledgments
 

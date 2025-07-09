@@ -5,9 +5,10 @@
 # Documentation
 *.md linguist-documentation
 
-# Exclude files from language statistics
-Makefile linguist-vendored
-*.mk linguist-vendored
+# Exclude Makefile from language statistics
+[Mm]akefile linguist-detectable=false linguist-vendored=true linguist-documentation=false
+Makefile.* linguist-detectable=false linguist-vendored=true
+*.mk linguist-detectable=false linguist-vendored=true
 
 # Exclude test fixtures from language stats
-test/* linguist-generated
+test/* linguist-generated=true

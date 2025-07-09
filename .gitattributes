@@ -5,5 +5,9 @@
 # Documentation
 *.md linguist-documentation
 
+# Exclude files from language statistics
+Makefile linguist-vendored
+*.mk linguist-vendored
+
 # Exclude test fixtures from language stats
 test/* linguist-generated

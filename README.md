@@ -2,6 +2,11 @@
 
 This project is a pure Go backend service built with Echo framework using clean architecture and domain-driven design principles. It aims to replicate the functionality of [Autostrada](https://autostrada.dev/) - a tool that generates REST API scaffolds based on user preferences.
 
+![GitHub language count](https://img.shields.io/github/languages/count/regiwitanto/go-scaffold)
+![GitHub top language](https://img.shields.io/github/languages/top/regiwitanto/go-scaffold)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/regiwitanto/go-scaffold)
+![GitHub](https://img.shields.io/github/license/regiwitanto/go-scaffold)
+
 ## Features
 
 - **REST API Scaffold Generation**: Create complete API application scaffolds with various features and configurations
@@ -165,7 +170,154 @@ Available options:
 - `GET /api/features` - List available features
 - `GET /api/download/:id` - Download a previously generated scaffold
 - `GET /api/docs` - API documentation (OpenAPI specification in JSON format)
-- `GET /api-docs` - Interactive API documentation using Swagger UI
+
+#### Detailed API Documentation
+
+##### Generate Scaffold
+
+```
+POST /api/generate
+```
+
+Request body:
+
+```json
+{
+  "appType": "api",
+  "databaseType": "postgresql",
+  "routerType": "echo",
+  "configType": "env",
+  "logFormat": "json",
+  "modulePath": "github.com/username/project",
+  "features": [
+    "basic-auth",
+    "sql-migrations",
+    "https-support"
+  ]
+}
+```
+
+Response:
+
+```json
+{
+  "id": "scaffold-123456",
+  "options": {
+    "appType": "api",
+    "databaseType": "postgresql",
+    "routerType": "echo",
+    "configType": "env",
+    "logFormat": "json",
+    "modulePath": "github.com/username/project",
+    "features": ["basic-auth", "sql-migrations", "https-support"]
+  },
+  "createdAt": "2025-07-09T12:34:56Z",
+  "filePath": "/tmp/go-scaffold/scaffold-123456.zip",
+  "size": 123456
+}
+```
+
+##### List Templates
+
+```
+GET /api/templates
+```
+
+Response:
+
+```json
+[
+  {
+    "id": "api-echo",
+    "name": "API with Echo",
+    "description": "RESTful API using Echo framework",
+    "type": "api",
+    "path": "/templates/api/echo"
+  },
+  {
+    "id": "api-chi",
+    "name": "API with Chi",
+    "description": "RESTful API using Chi router",
+    "type": "api",
+    "path": "/templates/api/chi"
+  }
+]
+```
+
+##### List Features
+
+```
+GET /api/features
+```
+
+Response:
+
+```json
+[
+  {
+    "id": "basic-auth",
+    "name": "Basic Authentication",
+    "description": "Adds HTTP Basic Authentication to the API",
+    "isPremium": false
+  },
+  {
+    "id": "sql-migrations",
+    "name": "SQL Migrations",
+    "description": "Adds database migration support",
+    "isPremium": false
+  }
+]
+```
+
+##### Download Scaffold
+
+```
+GET /api/download/:id
+```
+
+Returns a ZIP file containing the generated scaffold.
+
+### Client Libraries
+
+We provide official client libraries to interact with the Go Scaffold Generator API:
+
+- [go-scaffold-client-go](https://github.com/regiwitanto/go-scaffold-client-go) - Go client
+- [go-scaffold-client-js](https://github.com/regiwitanto/go-scaffold-client-js) - JavaScript/TypeScript client
+
+These libraries make it easy to integrate Go Scaffold Generator with your development workflow or tools.
+
+### Docker Deployment
+
+You can also run this service using Docker:
+
+```bash
+# Build the Docker image
+docker build -t go-scaffold .
+
+# Run the container
+docker run -p 8081:8081 -e PORT=8081 go-scaffold
+```
+
+For production deployment, you might want to use Docker Compose:
+
+```yaml
+# docker-compose.yml
+version: '3'
+services:
+  go-scaffold:
+    build: .
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - APP_ENV=production
+      - TEMPLATE_DIR=/app/templates
+    volumes:
+      - ./templates:/app/templates
+    restart: always
+```
+
+Run with `docker-compose up -d`.
 
 ## Development
 

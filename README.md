@@ -5,7 +5,7 @@ A pure Go backend service that generates REST API scaffolds based on user prefer
 ## Features
 
 - Generate complete API scaffolds with Echo, Chi, Gin, or standard library
-- Database support (PostgreSQL, MySQL, SQLite)
+- Database support (PostgreSQL, MySQL)
 - Clean Architecture & Domain-Driven Design
 - Plugin system with features like auth, logging, migrations
 - Configuration options (env vars, flags)

@@ -4,7 +4,7 @@ package model
 type ScaffoldOptions struct {
 	// Basic options
 	AppType      string `json:"appType"`      // "api" only
-	DatabaseType string `json:"databaseType"` // "none", "postgresql", "mysql", "sqlite"
+	DatabaseType string `json:"databaseType"` // "none", "postgresql", "mysql"
 	RouterType   string `json:"routerType"`   // "standard", "chi", "echo", etc.
 	ConfigType   string `json:"configType"`   // "env", "flags"
 	LogFormat    string `json:"logFormat"`    // "json", "text"

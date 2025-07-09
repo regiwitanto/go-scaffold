@@ -62,7 +62,7 @@ Each feature is implemented as conditional blocks in templates using Go's templa
 When modifying templates, ensure:
 
 1. **Feature Consistency**: All templates should handle features consistently
-2. **Database Support**: All templates must support all database types (PostgreSQL, MySQL, SQLite)
+2. **Database Support**: All templates must support all database types (PostgreSQL, MySQL)
 3. **Config Options**: Both environment variables and flags should be supported
 4. **Error Handling**: Proper error handling and logging
 

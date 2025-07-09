@@ -87,7 +87,7 @@ migrate-up:
 		fi; \
 		migrate -path ./migrations -database "$$DATABASE_URL" up; \
 		{{- else -}}
-		migrate -path ./migrations -database "{{if eq .DatabaseType "postgresql"}}postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSL_MODE){{else if eq .DatabaseType "mysql"}}mysql://$(DB_USER):$(DB_PASSWORD)@tcp($(DB_HOST):$(DB_PORT))/$(DB_NAME){{else}}sqlite3://$(DB_PATH){{end}}" up; \
+		migrate -path ./migrations -database "{{if eq .DatabaseType "postgresql"}}postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSL_MODE){{else if eq .DatabaseType "mysql"}}mysql://$(DB_USER):$(DB_PASSWORD)@tcp($(DB_HOST):$(DB_PORT))/$(DB_NAME){{end}}" up; \
 		{{- end}} \
 	else \
 		echo "Error: 'migrate' command not found. Install golang-migrate: https://github.com/golang-migrate/migrate/tree/master/cmd/migrate"; \
@@ -104,7 +104,7 @@ migrate-down:
 		fi; \
 		migrate -path ./migrations -database "$$DATABASE_URL" down; \
 		{{- else -}}
-		migrate -path ./migrations -database "{{if eq .DatabaseType "postgresql"}}postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSL_MODE){{else if eq .DatabaseType "mysql"}}mysql://$(DB_USER):$(DB_PASSWORD)@tcp($(DB_HOST):$(DB_PORT))/$(DB_NAME){{else}}sqlite3://$(DB_PATH){{end}}" down; \
+		migrate -path ./migrations -database "{{if eq .DatabaseType "postgresql"}}postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSL_MODE){{else if eq .DatabaseType "mysql"}}mysql://$(DB_USER):$(DB_PASSWORD)@tcp($(DB_HOST):$(DB_PORT))/$(DB_NAME){{end}}" down; \
 		{{- end}} \
 	else \
 		echo "Error: 'migrate' command not found. Install golang-migrate: https://github.com/golang-migrate/migrate/tree/master/cmd/migrate"; \

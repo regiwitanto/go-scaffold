@@ -12,9 +12,7 @@ require (
 	{{if eq .DatabaseType "mysql" -}}
 	github.com/go-sql-driver/mysql v1.7.1
 	{{- end}}
-	{{if eq .DatabaseType "sqlite" -}}
-	github.com/mattn/go-sqlite3 v1.14.18
-	{{- end}}
+
 	{{if (call .HasFeature "env-godotenv") -}}
 	github.com/joho/godotenv v1.5.1
 	{{- end}}

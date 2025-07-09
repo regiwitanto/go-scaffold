@@ -54,11 +54,11 @@ func TestTemplateRendering(t *testing.T) {
 			expectErr: false,
 		},
 		{
-			name: "Webapp Chi dengan SQLite dan Live Reload",
+			name: "API Chi dengan PostgreSQL dan Live Reload",
 			options: model.ScaffoldOptions{
-				AppType:      "webapp",
+				AppType:      "api",
 				RouterType:   "chi",
-				DatabaseType: "sqlite",
+				DatabaseType: "postgresql", // Changed from sqlite to postgresql
 				ConfigType:   "env",
 				LogFormat:    "json",
 				ModulePath:   "github.com/example/testapp",
@@ -67,7 +67,7 @@ func TestTemplateRendering(t *testing.T) {
 			templates: []string{
 				"internal/database/db.go.tmpl",
 				"internal/config/config.go.tmpl",
-				"cmd/web/main.go.tmpl",
+				"cmd/api/main.go.tmpl",
 			},
 			expectErr: false,
 		},

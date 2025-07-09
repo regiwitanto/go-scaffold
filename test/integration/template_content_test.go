@@ -73,17 +73,14 @@ func TestTemplateContentValidity(t *testing.T) {
 		{
 			name:       "Valid conditional database imports",
 			fileSuffix: "db.go.tmpl",
-			validate: func(content string) (bool, string) {
-				// Check for database import patterns
+			validate: func(content string) (bool, string) { // Check for database import patterns
 				postgresPattern := "{{if eq .DatabaseType \"postgresql\"}}"
 				mysqlPattern := "{{if eq .DatabaseType \"mysql\"}}"
-				sqlitePattern := "{{if eq .DatabaseType \"sqlite\"}}"
 
 				if strings.Contains(content, "database/sql") {
 					// Should have conditional imports for database drivers
 					if !strings.Contains(content, postgresPattern) &&
-						!strings.Contains(content, mysqlPattern) &&
-						!strings.Contains(content, sqlitePattern) {
+						!strings.Contains(content, mysqlPattern) {
 						return false, "missing conditional database driver imports"
 					}
 				}
@@ -157,7 +154,7 @@ func TestDatabaseTemplateConsistency(t *testing.T) {
 	}
 
 	// Database types to test
-	dbTypes := []string{"postgresql", "mysql", "sqlite"}
+	dbTypes := []string{"postgresql", "mysql"}
 
 	// Test each database template
 	for _, templateFile := range dbTemplates {
@@ -182,10 +179,7 @@ func TestDatabaseTemplateConsistency(t *testing.T) {
 					if !strings.Contains(content, "mysql") {
 						t.Errorf("MySQL template does not contain mysql driver imports")
 					}
-				case "sqlite":
-					if !strings.Contains(content, "sqlite") {
-						t.Errorf("SQLite template does not contain sqlite driver imports")
-					}
+
 				}
 
 				// Check for common database operations
@@ -219,10 +213,7 @@ func TestDatabaseTemplateConsistency(t *testing.T) {
 					if !strings.Contains(strings.ToLower(content), "mysql") {
 						t.Errorf("MySQL config does not contain mysql configuration")
 					}
-				case "sqlite":
-					if !strings.Contains(strings.ToLower(content), "sqlite") {
-						t.Errorf("SQLite config does not contain sqlite configuration")
-					}
+
 				}
 			})
 		}

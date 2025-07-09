@@ -8,8 +8,7 @@ import (
 	_ "github.com/lib/pq"
 	{{- else if eq .DatabaseType "mysql" -}}
 	_ "github.com/go-sql-driver/mysql"
-	{{- else if eq .DatabaseType "sqlite" -}}
-	_ "github.com/mattn/go-sqlite3"
+
 	{{- end}}
 	
 	"{{.ModulePath}}/internal/config"
@@ -30,10 +29,7 @@ func Connect(cfg *config.Config) (*sql.DB, error) {
 	dsn = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true",
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
 	driverName = "mysql"
-	{{- else if eq .DatabaseType "sqlite" -}}
-	// SQLite connection string
-	dsn = cfg.DBPath
-	driverName = "sqlite3"
+
 	{{- end}}
 	
 	db, err := sql.Open(driverName, dsn)
@@ -63,8 +59,7 @@ func Migrate(cfg *config.Config) error {
 	{{- else if eq .DatabaseType "mysql" -}}
 	dsn = fmt.Sprintf("mysql://%s:%s@tcp(%s:%d)/%s",
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
-	{{- else if eq .DatabaseType "sqlite" -}}
-	dsn = fmt.Sprintf("sqlite3://%s", cfg.DBPath)
+
 	{{- end}}
 	
 	// You would implement the migration code here using your preferred library

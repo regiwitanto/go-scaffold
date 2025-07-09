@@ -267,3 +267,36 @@ if err != nil {
 Tests are automatically run as part of the continuous integration (CI) process. The CI pipeline includes running all tests, generating a coverage report, and failing the build if any tests fail.
 
 The CI pipeline also includes running the tests with the race detector enabled to catch race conditions that might not be detected during normal testing.
+
+## Current Test Status
+
+### Integration Tests
+
+The integration tests in `/test/integration` are currently skipped as they need further work to align with the actual structure of the template files in the codebase. These tests validate that templates are consistent, render correctly, and follow best practices.
+
+#### Issues to Fix
+
+1. **Template Path Structure**:
+   - Tests expect `main.go.tmpl` files at the root of the template directories, but they are actually in subdirectories like `cmd/api/main.go.tmpl` or `cmd/web/main.go.tmpl`
+   - Some templates are missing entirely in certain router types (gin/standard webapp templates)
+
+2. **Template Function Support**:
+   - Templates use `.HasFeature` function calls, which needs to be properly implemented
+   - Need to add function map to template rendering with `HasFeature` implementation
+
+3. **Missing Template Data Fields**:
+   - Templates reference fields like `.Binary`, `.Subject`, `.Timestamp` that don't exist in the test TemplateData struct
+   - Added fields to TemplateData but still need proper integration with template function calls
+
+#### Plans to Re-enable
+
+To re-enable integration tests:
+
+1. Update `testutil.TemplateData` to include all required fields used in templates
+2. Modify template path checks to match the actual directory structure
+3. Ensure template function map includes all functions used in templates:
+   - `HasFeature`
+   - Any other custom functions used in templates
+4. Update test case assertions to match actual template outputs
+
+See the detailed README in the `/test/integration` directory for more information.

@@ -66,3 +66,16 @@ Mock objects for testing are located in the `/test/mocks` directory. These mocks
 ## Test Utilities
 
 Common test utilities are located in the `/test/testutil` package. These utilities provide common functionality for testing, such as finding the project root, asserting file existence, etc.
+
+## Test Status
+
+### Integration Tests
+
+The integration tests in `/test/integration` are currently skipped as they need further work to align with the actual structure of the template files in the codebase. See the [Integration Tests Status](integration/README.md) for more details on what needs to be fixed.
+
+Most of the issues relate to:
+1. Template path structure mismatches
+2. Template function support
+3. Missing template data fields
+
+These tests should be updated once the test centralization migration is complete and stable.

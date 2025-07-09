@@ -3,7 +3,7 @@ package model
 // ScaffoldOptions represents the options for generating a scaffold
 type ScaffoldOptions struct {
 	// Basic options
-	AppType      string `json:"appType"`      // "api" or "webapp"
+	AppType      string `json:"appType"`      // "api" only
 	DatabaseType string `json:"databaseType"` // "none", "postgresql", "mysql", "sqlite"
 	RouterType   string `json:"routerType"`   // "standard", "chi", "echo", etc.
 	ConfigType   string `json:"configType"`   // "env", "flags"
@@ -23,7 +23,7 @@ type Template struct {
 	Name        string `json:"name"`        // Display name
 	Description string `json:"description"` // Short description
 	Path        string `json:"path"`        // Filesystem path to template
-	Type        string `json:"type"`        // "api" or "webapp"
+	Type        string `json:"type"`        // "api" only
 }
 
 // GeneratedScaffold represents a generated scaffold

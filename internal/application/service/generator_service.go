@@ -209,8 +209,8 @@ func (s *GeneratorServiceImpl) GetAvailableFeatures() ([]*model.Feature, error) 
 
 // validateOptions validates the scaffold options
 func (s *GeneratorServiceImpl) validateOptions(options model.ScaffoldOptions) error {
-	if options.AppType != "api" && options.AppType != "webapp" {
-		return errors.New("invalid application type")
+	if options.AppType != "api" {
+		return errors.New("invalid application type (only 'api' is supported)")
 	}
 
 	if options.RouterType == "" {

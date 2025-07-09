@@ -54,10 +54,6 @@ func main() {
 		filepath.Join(templatesDir, "api", "echo"),
 		filepath.Join(templatesDir, "api", "gin"),
 		filepath.Join(templatesDir, "api", "standard"),
-		filepath.Join(templatesDir, "webapp", "chi"),
-		filepath.Join(templatesDir, "webapp", "echo"),
-		filepath.Join(templatesDir, "webapp", "gin"),
-		filepath.Join(templatesDir, "webapp", "standard"),
 		filepath.Join(templatesDir, "web"),
 	}
 

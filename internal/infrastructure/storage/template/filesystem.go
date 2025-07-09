@@ -39,13 +39,6 @@ func (r *FilesystemRepository) GetAll() ([]*model.Template, error) {
 	}
 	templates = append(templates, apiTemplates...)
 
-	// Get webapp templates
-	webappTemplates, err := r.GetByType("webapp")
-	if err != nil {
-		return nil, err
-	}
-	templates = append(templates, webappTemplates...)
-
 	return templates, nil
 }
 

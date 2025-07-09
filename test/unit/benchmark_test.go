@@ -25,7 +25,7 @@ func BenchmarkGenerateScaffold(b *testing.B) {
 	// Create mock repositories
 	mockTemplateRepo := &mocks.MockTemplateRepository{}
 	mockScaffoldRepo := &mocks.MockScaffoldRepository{}
-	
+
 	// Setup specific behavior for GetByType
 	mockTemplateRepo.GetByTypeFunc = func(templateType string) ([]*model.Template, error) {
 		if templateType == "api" {
@@ -41,10 +41,10 @@ func BenchmarkGenerateScaffold(b *testing.B) {
 		}
 		return nil, nil
 	}
-	
+
 	// Create service
 	generatorService := service.NewGeneratorService(mockTemplateRepo, mockScaffoldRepo, tmpDir)
-	
+
 	// Define options for benchmarking
 	options := model.ScaffoldOptions{
 		AppType:      "api",
@@ -55,27 +55,27 @@ func BenchmarkGenerateScaffold(b *testing.B) {
 		ModulePath:   "github.com/example/bench-app",
 		Features:     []string{"basic-auth", "sql-migrations"},
 	}
-	
+
 	// Reset the timer before the benchmark loop
 	b.ResetTimer()
-	
+
 	// Run the benchmark
 	for i := 0; i < b.N; i++ {
 		scaffold, err := generatorService.GenerateScaffold(options)
 		if err != nil {
 			b.Fatalf("Failed to generate scaffold: %v", err)
 		}
-		
+
 		// Verify the scaffold was created
 		if scaffold == nil {
 			b.Fatal("Expected scaffold to be returned, got nil")
 		}
-		
+
 		// Check if the file exists
 		if _, err := os.Stat(scaffold.FilePath); os.IsNotExist(err) {
 			b.Fatalf("Generated scaffold file not found: %s", scaffold.FilePath)
 		}
-		
+
 		// Clean up generated file
 		os.Remove(scaffold.FilePath)
 	}
@@ -88,7 +88,7 @@ func BenchmarkTemplateRendering(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to find project root: %v", err)
 	}
-	
+
 	// Template data for benchmarking
 	templateData := struct {
 		AppName      string
@@ -103,17 +103,17 @@ func BenchmarkTemplateRendering(b *testing.B) {
 		DatabaseType: "postgresql",
 		Features:     []string{"basic-auth", "sql-migrations"},
 	}
-	
+
 	// Find a template file to benchmark
 	templateFile := filepath.Join(rootDir, "templates", "api", "echo", "go.mod.tmpl")
 	if _, err := os.Stat(templateFile); os.IsNotExist(err) {
 		b.Skipf("Template file not found: %s", templateFile)
 		return
 	}
-	
+
 	// Reset the timer before the benchmark loop
 	b.ResetTimer()
-	
+
 	// Run the benchmark
 	for i := 0; i < b.N; i++ {
 		// Parse and execute the template
@@ -121,13 +121,13 @@ func BenchmarkTemplateRendering(b *testing.B) {
 		if err != nil {
 			b.Fatalf("Failed to parse template: %v", err)
 		}
-		
+
 		output := new(bytes.Buffer)
 		err = tmpl.Execute(output, templateData)
 		if err != nil {
 			b.Fatalf("Failed to execute template: %v", err)
 		}
-		
+
 		// Ensure the output is not optimized away
 		if output.Len() == 0 {
 			b.Fatal("Template output is empty")

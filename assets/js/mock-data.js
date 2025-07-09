@@ -24,30 +24,7 @@ const mockTemplates = [
         type: "api",
         description: "RESTful API using Go standard library"
     },
-    {
-        id: "webapp-echo",
-        name: "Web App with Echo",
-        type: "webapp",
-        description: "Web application using Echo framework with HTML templates"
-    },
-    {
-        id: "webapp-chi",
-        name: "Web App with Chi",
-        type: "webapp",
-        description: "Web application using Chi router with HTML templates"
-    },
-    {
-        id: "webapp-gin",
-        name: "Web App with Gin",
-        type: "webapp",
-        description: "Web application using Gin framework with HTML templates"
-    },
-    {
-        id: "webapp-standard",
-        name: "Web App with Standard Library",
-        type: "webapp",
-        description: "Web application using Go standard library with HTML templates"
-    }
+    // Only API templates are supported
 ];
 
 const mockFeatures = {

@@ -7,21 +7,21 @@ import (
 // MockGeneratorService is a mock implementation of the GeneratorService interface
 type MockGeneratorService struct {
 	// Mock behavior flags and return values
-	GenerateScaffoldFunc      func(options model.ScaffoldOptions) (*model.GeneratedScaffold, error)
-	GetScaffoldFunc           func(id string) (*model.GeneratedScaffold, error)
-	GetAllTemplatesFunc       func() ([]*model.Template, error)
-	GetTemplatesByTypeFunc    func(templateType string) ([]*model.Template, error)
-	GetAvailableFeaturesFunc  func() ([]*model.Feature, error)
-	
+	GenerateScaffoldFunc     func(options model.ScaffoldOptions) (*model.GeneratedScaffold, error)
+	GetScaffoldFunc          func(id string) (*model.GeneratedScaffold, error)
+	GetAllTemplatesFunc      func() ([]*model.Template, error)
+	GetTemplatesByTypeFunc   func(templateType string) ([]*model.Template, error)
+	GetAvailableFeaturesFunc func() ([]*model.Feature, error)
+
 	// Tracking calls
-	GenerateScaffoldCalled      bool
-	GenerateScaffoldOptions     model.ScaffoldOptions
-	GetScaffoldCalled           bool
-	GetScaffoldID               string
-	GetAllTemplatesCalled       bool
-	GetTemplatesByTypeCalled    bool
-	GetTemplatesByTypeArg       string
-	GetAvailableFeaturesCalled  bool
+	GenerateScaffoldCalled     bool
+	GenerateScaffoldOptions    model.ScaffoldOptions
+	GetScaffoldCalled          bool
+	GetScaffoldID              string
+	GetAllTemplatesCalled      bool
+	GetTemplatesByTypeCalled   bool
+	GetTemplatesByTypeArg      string
+	GetAvailableFeaturesCalled bool
 }
 
 // GenerateScaffold implements the GeneratorService interface
@@ -87,7 +87,7 @@ func (m *MockGeneratorService) GetTemplatesByType(templateType string) ([]*model
 	if m.GetTemplatesByTypeFunc != nil {
 		return m.GetTemplatesByTypeFunc(templateType)
 	}
-	
+
 	// Return mock templates based on type
 	if templateType == "api" {
 		return []*model.Template{

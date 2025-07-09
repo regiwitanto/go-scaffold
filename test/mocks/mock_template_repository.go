@@ -7,16 +7,16 @@ import (
 // MockTemplateRepository is a mock implementation of the TemplateRepository interface
 type MockTemplateRepository struct {
 	// Mock behavior functions
-	GetAllFunc   func() ([]*model.Template, error)
-	GetByIDFunc  func(id string) (*model.Template, error)
+	GetAllFunc    func() ([]*model.Template, error)
+	GetByIDFunc   func(id string) (*model.Template, error)
 	GetByTypeFunc func(templateType string) ([]*model.Template, error)
-	
+
 	// Tracking calls
-	GetAllCalled   bool
-	GetByIDCalled  bool
-	GetByIDArg     string
+	GetAllCalled    bool
+	GetByIDCalled   bool
+	GetByIDArg      string
 	GetByTypeCalled bool
-	GetByTypeArg   string
+	GetByTypeArg    string
 }
 
 // GetAll implements the TemplateRepository interface
@@ -64,7 +64,7 @@ func (m *MockTemplateRepository) GetByID(id string) (*model.Template, error) {
 	if m.GetByIDFunc != nil {
 		return m.GetByIDFunc(id)
 	}
-	
+
 	// Return mock templates based on ID
 	switch id {
 	case "api-echo":
@@ -100,7 +100,7 @@ func (m *MockTemplateRepository) GetByID(id string) (*model.Template, error) {
 			Type:        "webapp",
 		}, nil
 	}
-	
+
 	return nil, nil
 }
 
@@ -111,7 +111,7 @@ func (m *MockTemplateRepository) GetByType(templateType string) ([]*model.Templa
 	if m.GetByTypeFunc != nil {
 		return m.GetByTypeFunc(templateType)
 	}
-	
+
 	// Return mock templates based on type
 	if templateType == "api" {
 		return []*model.Template{
@@ -148,6 +148,6 @@ func (m *MockTemplateRepository) GetByType(templateType string) ([]*model.Templa
 			},
 		}, nil
 	}
-	
+
 	return []*model.Template{}, nil
 }

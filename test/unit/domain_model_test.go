@@ -48,12 +48,12 @@ func TestScaffoldOptions(t *testing.T) {
 
 	// Check features array
 	if len(opts.Features) != len(unmarshalledOpts.Features) {
-		t.Errorf("Features length does not match: expected %d, got %d", 
+		t.Errorf("Features length does not match: expected %d, got %d",
 			len(opts.Features), len(unmarshalledOpts.Features))
 	} else {
 		for i, feature := range opts.Features {
 			if feature != unmarshalledOpts.Features[i] {
-				t.Errorf("Feature at index %d does not match: expected %s, got %s", 
+				t.Errorf("Feature at index %d does not match: expected %s, got %s",
 					i, feature, unmarshalledOpts.Features[i])
 			}
 		}
@@ -65,7 +65,7 @@ func TestGeneratedScaffold(t *testing.T) {
 	scaffold := model.GeneratedScaffold{
 		ID: "test-id",
 		Options: model.ScaffoldOptions{
-			AppType:      "webapp",
+			AppType:      "api",
 			DatabaseType: "mysql",
 			RouterType:   "chi",
 		},
@@ -78,8 +78,8 @@ func TestGeneratedScaffold(t *testing.T) {
 	if scaffold.ID != "test-id" {
 		t.Errorf("ID does not match: expected test-id, got %s", scaffold.ID)
 	}
-	if scaffold.Options.AppType != "webapp" {
-		t.Errorf("Options.AppType does not match: expected webapp, got %s", scaffold.Options.AppType)
+	if scaffold.Options.AppType != "api" {
+		t.Errorf("Options.AppType does not match: expected api, got %s", scaffold.Options.AppType)
 	}
 	if scaffold.Options.DatabaseType != "mysql" {
 		t.Errorf("Options.DatabaseType does not match: expected mysql, got %s", scaffold.Options.DatabaseType)

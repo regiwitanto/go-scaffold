@@ -7,15 +7,15 @@ import (
 // MockScaffoldRepository is a mock implementation of the ScaffoldRepository interface
 type MockScaffoldRepository struct {
 	// Mock behavior functions
-	SaveFunc   func(scaffold *model.GeneratedScaffold) error
+	SaveFunc    func(scaffold *model.GeneratedScaffold) error
 	GetByIDFunc func(id string) (*model.GeneratedScaffold, error)
 	DeleteFunc  func(id string) error
-	
+
 	// Tracking calls
-	SaveCalled   bool
-	SaveArg      *model.GeneratedScaffold
+	SaveCalled    bool
+	SaveArg       *model.GeneratedScaffold
 	GetByIDCalled bool
-	GetByIDArg   string
+	GetByIDArg    string
 	DeleteCalled  bool
 	DeleteArg     string
 }
@@ -37,7 +37,7 @@ func (m *MockScaffoldRepository) GetByID(id string) (*model.GeneratedScaffold, e
 	if m.GetByIDFunc != nil {
 		return m.GetByIDFunc(id)
 	}
-	
+
 	// Return a mock scaffold
 	return &model.GeneratedScaffold{
 		ID: id,

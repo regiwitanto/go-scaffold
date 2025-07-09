@@ -16,14 +16,9 @@ func SetupRoutes(e *echo.Echo, generatorHandler *handler.GeneratorHandler) {
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
-	// Serve static files
-	e.Static("/static", "assets")
-	e.Static("/static/js", "assets/js")
-	e.Static("/static/css", "assets/css")
-
-	// Web UI routes
+	// Redirect root to API docs
 	e.GET("/", func(c echo.Context) error {
-		return c.File("templates/web/index.html")
+		return c.Redirect(http.StatusMovedPermanently, "/api/docs")
 	})
 
 	// API routes
@@ -40,9 +35,12 @@ func SetupRoutes(e *echo.Echo, generatorHandler *handler.GeneratorHandler) {
 		api.GET("/docs", apiDocsHandler.HandleApiDocs)
 	}
 
-	// Swagger UI route
+	// Swagger UI endpoint - replaced with JSON response since we're removing HTML
 	e.GET("/api-docs", func(c echo.Context) error {
-		return c.File("templates/web/swagger-ui.html")
+		return c.JSON(http.StatusOK, map[string]string{
+			"message":  "API documentation available at /api/docs",
+			"docs_url": "/api/docs",
+		})
 	})
 
 	// 404 handler

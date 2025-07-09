@@ -184,12 +184,11 @@ if [ "$RUN_BENCHMARK" = true ]; then
     fi
 fi
 
-# Generate HTML coverage report if coverage was requested
+# Generate coverage summary if coverage was requested
 if [ "$GENERATE_COVERAGE" = true ] && [ -f "$COVER_PROFILE" ]; then
-    COVERAGE_HTML="$COVERAGE_DIR/coverage.html"
-    echo -e "${YELLOW}Generating HTML coverage report at $COVERAGE_HTML${NC}"
-    go tool cover -html="$COVER_PROFILE" -o "$COVERAGE_HTML"
-    echo -e "${GREEN}Coverage report generated.${NC}"
+    echo -e "${YELLOW}Generating coverage summary${NC}"
+    go tool cover -func="$COVER_PROFILE"
+    echo -e "${GREEN}Coverage summary generated.${NC}"
     
     # Display coverage percentage
     COVERAGE=$(go tool cover -func="$COVER_PROFILE" | grep total | awk '{print $3}')

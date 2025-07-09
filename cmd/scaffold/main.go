@@ -25,15 +25,7 @@ func main() {
 	e := echo.New()
 	e.HideBanner = true
 
-	// Create assets directory if it doesn't exist
-	if err := os.MkdirAll("assets", 0755); err != nil {
-		log.Fatalf("Failed to create assets directory: %v", err)
-	}
-
-	// Create assets/js directory if it doesn't exist
-	if err := os.MkdirAll("assets/js", 0755); err != nil {
-		log.Fatalf("Failed to create assets/js directory: %v", err)
-	}
+	// We don't need assets directories for a pure backend service
 
 	// Set up temp directory for scaffold generation
 	tempDir := os.Getenv("TEMP_DIR")
@@ -54,7 +46,6 @@ func main() {
 		filepath.Join(templatesDir, "api", "echo"),
 		filepath.Join(templatesDir, "api", "gin"),
 		filepath.Join(templatesDir, "api", "standard"),
-		filepath.Join(templatesDir, "web"),
 	}
 
 	for _, dir := range templateDirs {
@@ -88,8 +79,7 @@ func main() {
 	// Clear message to show where the server is running
 	serverURL := fmt.Sprintf("http://localhost:%s", port)
 	log.Printf("Starting server on %s", serverURL)
-	log.Printf("Web UI available at %s", serverURL)
-	log.Printf("API Documentation at %s/api-docs", serverURL)
+	log.Printf("API Documentation at %s/api/docs", serverURL)
 
 	e.Logger.Fatal(e.Start(":" + port))
 }

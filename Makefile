@@ -34,7 +34,7 @@ test-cover: ## Run tests with coverage
 	@echo "Running tests with coverage..."
 	go test -cover -v ./...
 	go test -coverprofile=coverage.out ./...
-	go tool cover -html=coverage.out -o coverage.html
+	go tool cover -func=coverage.out
 
 run: ## Run the application
 	@echo "Running $(APP_NAME)..."

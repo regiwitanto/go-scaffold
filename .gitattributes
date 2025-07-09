@@ -1,0 +1,9 @@
+# Mark the project as Go
+*.go linguist-language=Go
+*.tmpl linguist-language=Go
+
+# Documentation
+*.md linguist-documentation
+
+# Exclude test fixtures from language stats
+test/* linguist-generated

@@ -1,0 +1,31 @@
+# Exclude all test files
+test/
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/build/
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+*.html
+
+# Dependency directories
+vendor/
+
+# Git files
+.git/
+.gitignore
+
+# Documentation
+*.md
+LICENSE
+
+# Misc
+.DS_Store

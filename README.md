@@ -1,6 +1,6 @@
 # Go Scaffold Generator
 
-This project is a Go backend service built with Echo framework using clean architecture and domain-driven design principles. It aims to replicate the functionality of [Autostrada](https://autostrada.dev/) - a tool that generates REST API scaffolds based on user preferences.
+This project is a pure Go backend service built with Echo framework using clean architecture and domain-driven design principles. It aims to replicate the functionality of [Autostrada](https://autostrada.dev/) - a tool that generates REST API scaffolds based on user preferences.
 
 ## Features
 
@@ -14,7 +14,7 @@ This project is a Go backend service built with Echo framework using clean archi
 - **Configuration Types**: Support for different configuration methods (env vars, flags)
 - **Plugin System**: Extensible system to add features like auth, logging, migrations
 - **ZIP Generation**: Create downloadable archives of generated code
-- **Web Interface**: User-friendly web interface to configure and generate REST API scaffolds
+- **RESTful API**: Complete RESTful API with programmatic access to scaffold generation
 
 ## Project Structure
 
@@ -49,10 +49,8 @@ go-scaffold/
 │       │   │   └── ratelimit.go      # Rate limiting middleware
 │       │   └── routes/               # Route definitions
 │       │       └── routes.go         # API routes
-│       ├── dto/                      # Data Transfer Objects
-│       │   └── scaffold_request.go   # Scaffold generation request DTO
-│       └── web/                      # Web interface
-│           └── templates/            # Web UI templates
+│       └── dto/                      # Data Transfer Objects
+│           └── scaffold_request.go   # Scaffold generation request DTO
 ├── pkg/                              # Public packages
 │   ├── logger/                       # Logging utilities
 │   │   └── logger.go
@@ -66,12 +64,7 @@ go-scaffold/
 │   │   ├── echo/                     # Echo router templates
 │   │   ├── gin/                      # Gin router templates
 │   │   └── standard/                 # Standard library templates
-│   ├── shared/                       # Shared template files
-│   └── web/                          # Web UI template files
-├── assets/                           # Static assets for web UI
-│   ├── css/                          # CSS styles
-│   ├── js/                           # JavaScript files
-│   └── images/                       # Images
+│   └── shared/                       # Shared template files
 ├── test/                             # Test files
 │   ├── functional/                   # Functional tests
 │   ├── integration/                  # Integration tests
@@ -122,28 +115,47 @@ PORT=4000 go run .
 
 ### Using the Application
 
-Once running, you can access the web interface at http://localhost:4000 which allows you to:
+The application provides a RESTful API for generating Go API scaffolds. You can interact with it using tools like `curl` or Postman:
 
-1. Configure your REST API scaffold:
-   - Database type (None, PostgreSQL, MySQL, SQLite)
-   - Router/framework (Chi, Echo, Gin, standard library)
-   - Configuration type (environment variables, command-line flags)
-   - Logging format (JSON, plain text)
-2. Select additional features:
-   - Access logging
-   - Admin Makefile
-   - Automatic versioning
-   - Basic auth
-   - Email support
-   - Error notifications
-   - Secure cookies
-   - SQL migrations
-   - User accounts and authentication
-   - HTTPS support
-   - Custom error pages
+```bash
+# Generate a scaffold
+curl -X POST http://localhost:8081/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "appType": "api",
+    "databaseType": "postgresql",
+    "routerType": "echo",
+    "configType": "env",
+    "logFormat": "json",
+    "modulePath": "github.com/your-username/your-project",
+    "features": ["basic-auth", "sql-migrations"]
+  }'
+
+# Download the generated scaffold
+curl -o scaffold.zip http://localhost:8081/api/download/GENERATED_ID
+```
+
+Available options:
+
+1. API scaffold configuration:
+   - Database type: `none`, `postgresql`, `mysql`, `sqlite`
+   - Router/framework: `chi`, `echo`, `gin`, `standard`
+   - Configuration type: `env`, `flags`
+   - Logging format: `json`, `text`
+
+2. Available features:
+   - `access-logging`: HTTP request/response logging
+   - `admin-makefile`: Administrative Makefile commands
+   - `auto-versioning`: Automatic version number generation
+   - `basic-auth`: Basic authentication
+   - `email-support`: Email sending capabilities
+   - `error-notifications`: Error reporting
+   - `secure-cookies`: Encrypted cookies
+   - `sql-migrations`: Database migrations
+   - `user-accounts`: User authentication system
+   - `https-support`: HTTPS/TLS support
+   - `custom-errors`: Custom error pages
    - And more...
-
-After configuring, the application will generate a ZIP file containing the scaffold code that can be downloaded.
 
 ### API Endpoints
 
@@ -161,9 +173,8 @@ After configuring, the application will generate a ZIP file containing the scaff
 
 1. **Template Engine**: Responsible for parsing and processing templates
 2. **Scaffold Generator**: Creates REST API scaffolds based on user preferences
-3. **Web Interface**: User-friendly interface for configuring and generating scaffolds
-4. **API**: RESTful API for programmatic scaffold generation
-5. **ZIP Creator**: Creates downloadable archives of generated code
+3. **API**: RESTful API for programmatic scaffold generation
+4. **ZIP Creator**: Creates downloadable archives of generated code
 
 ### Architecture Overview
 
@@ -182,7 +193,6 @@ This project follows Clean Architecture with Domain-Driven Design principles:
    - ZIP file generation
 
 4. **Interface Layer**:
-   - Web UI
    - RESTful API
    - DTOs for data transformation
 

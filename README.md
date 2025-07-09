@@ -30,8 +30,7 @@ This project is a pure Go backend service built with Echo framework using clean 
 go-scaffold/
 ├── cmd/                      # Main applications of the project
 │   └── scaffold/             # The scaffold generator app
-│       ├── main.go           # Entry point for the scaffold generator
-│       └── main_test.go      # Tests for main.go
+│       └── main.go           # Entry point for the scaffold generator
 ├── docs/                     # Documentation
 │   └── swagger.go            # OpenAPI/Swagger documentation
 ├── internal/                 # Private application code
@@ -43,6 +42,8 @@ go-scaffold/
 │   │   └── service/          # Domain service interfaces
 │   ├── infrastructure/       # Infrastructure layer (implementations)
 │   │   └── storage/          # Storage implementations
+│   │       ├── scaffold/     # Scaffold storage implementation
+│   │       └── template/     # Template storage implementation
 │   ├── interfaces/           # Interface layer (adapters)
 │   │   └── api/              # API interfaces
 │   │       ├── handler/      # HTTP handlers
@@ -60,14 +61,6 @@ go-scaffold/
 │       ├── db/               # Database templates
 │       └── email/            # Email templates
 ├── test/                     # Test files
-│   ├── cmd/                  # Command tests
-│   ├── functional/           # Functional tests
-│   ├── integration/          # Integration tests
-│   ├── internal/             # Internal package tests
-│   ├── mocks/                # Mock implementations
-│   ├── testutil/             # Test utilities
-│   └── unit/                 # Unit tests
-├── build/                    # Build output directory
 ├── go.mod                    # Go module file
 ├── go.sum                    # Go dependencies checksums
 ├── Makefile                  # Build automation

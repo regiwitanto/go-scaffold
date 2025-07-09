@@ -1,140 +1,47 @@
 # Go Scaffold Generator
 
-This project is a pure Go backend service built with Echo framework using clean architecture and domain-driven design principles. It aims to replicate the functionality of [Autostrada](https://autostrada.dev/) - a tool that generates REST API scaffolds based on user preferences.
+A pure Go backend service that generates REST API scaffolds based on user preferences, built with Echo framework.
 
-![GitHub language count](https://img.shields.io/github/languages/count/regiwitanto/go-scaffold)
 ![GitHub top language](https://img.shields.io/github/languages/top/regiwitanto/go-scaffold)
-![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/regiwitanto/go-scaffold)
 ![GitHub](https://img.shields.io/github/license/regiwitanto/go-scaffold)
-![GitHub issues](https://img.shields.io/github/issues/regiwitanto/go-scaffold)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/regiwitanto/go-scaffold)
-![GitHub last commit](https://img.shields.io/github/last-commit/regiwitanto/go-scaffold)
 
 ## Features
 
-- **REST API Scaffold Generation**: Create complete API application scaffolds with various features and configurations
-- **Echo Framework**: High-performance, extensible, minimalist web framework for Go
-- **Clean Architecture**: Separation of concerns with layers (domain, application, infrastructure, interfaces)
-- **Domain-Driven Design**: Focus on the core domain and domain logic
-- **Template Management**: Store and manage templates for different router types
-- **Database Support**: Generate scaffolds with different database options (PostgreSQL, MySQL, SQLite)
-- **Router Options**: Support for different router implementations (Chi, Echo, Gin, standard library)
-- **Configuration Types**: Support for different configuration methods (env vars, flags)
-- **Plugin System**: Extensible system to add features like auth, logging, migrations
-- **ZIP Generation**: Create downloadable archives of generated code
-- **RESTful API**: Complete RESTful API with programmatic access to scaffold generation
+- Generate complete API scaffolds with Echo, Chi, Gin, or standard library
+- Database support (PostgreSQL, MySQL, SQLite)
+- Clean Architecture & Domain-Driven Design
+- Plugin system with features like auth, logging, migrations
+- Configuration options (env vars, flags)
+- RESTful API for programmatic access
 
-## Project Structure
-
-```
-go-scaffold/
-├── cmd/                      # Main applications of the project
-│   └── scaffold/             # The scaffold generator app
-│       └── main.go           # Entry point for the scaffold generator
-├── docs/                     # Documentation
-│   └── swagger.go            # OpenAPI/Swagger documentation
-├── internal/                 # Private application code
-│   ├── application/          # Application layer (use cases)
-│   │   └── service/          # Application services
-│   ├── domain/               # Domain layer (core business logic)
-│   │   ├── model/            # Domain models/entities
-│   │   ├── repository/       # Repository interfaces
-│   │   └── service/          # Domain service interfaces
-│   ├── infrastructure/       # Infrastructure layer (implementations)
-│   │   └── storage/          # Storage implementations
-│   │       ├── scaffold/     # Scaffold storage implementation
-│   │       └── template/     # Template storage implementation
-│   ├── interfaces/           # Interface layer (adapters)
-│   │   └── api/              # API interfaces
-│   │       ├── handler/      # HTTP handlers
-│   │       ├── routes/       # Route definitions
-│   │       └── schema/       # API schema definitions
-│   └── util/                 # Utility functions
-├── templates/                # Scaffold templates
-│   ├── api/                  # API templates
-│   │   ├── chi/              # Chi router templates
-│   │   ├── echo/             # Echo router templates
-│   │   ├── gin/              # Gin router templates
-│   │   └── standard/         # Standard library templates
-│   └── shared/               # Shared template files
-│       ├── auth/             # Authentication templates
-│       ├── db/               # Database templates
-│       └── email/            # Email templates
-├── test/                     # Test files
-├── go.mod                    # Go module file
-├── go.sum                    # Go dependencies checksums
-├── Makefile                  # Build automation
-├── Dockerfile                # Docker build file
-├── docker-compose.yml        # Docker Compose configuration
-├── .env.example              # Example environment variables
-├── .gitignore                # Git ignore file
-├── .gitattributes            # Git attributes file
-└── README.md                 # Project documentation
-```
-
-## Getting Started
+## Quick Start
 
 ### Prerequisites
-
 - Go 1.22+
-- Make (optional, for using the Makefile)
+- Make (optional)
 
-### Building from Source
+### Install & Run
 
 ```bash
-# Clone the repository
+# Clone and build
 git clone https://github.com/regiwitanto/go-scaffold.git
 cd go-scaffold
-
-# Install dependencies
 go mod tidy
+make build  # or go build -o build/go-scaffold ./cmd/scaffold
 
-# Build the application
-make build
-# or directly with Go
-go build -o build/go-scaffold ./cmd/scaffold
+# Run the server
+go run ./cmd/scaffold  # default port 8081
 ```
 
 ### Configuration
-
-Create a `.env` file based on the `.env.example` or set environment variables directly:
-
+Create a `.env` file or set environment variables:
 ```
-# Application Environment
 APP_ENV=development
-
-# HTTP Port for the server
 PORT=8081
-
-# Template directory path
 TEMPLATE_DIR=./templates
-
-# Temporary directory for scaffold generation
-TEMP_DIR=
 ```
 
-### Running the Application
-
-```bash
-# Install dependencies
-go mod tidy
-
-# Run the application
-go run ./cmd/scaffold
-
-# Or with live reload (requires air: https://github.com/cosmtrek/air)
-air
-```
-
-The server will start on port 8081 by default. You can change this by setting the PORT environment variable:
-
-```bash
-PORT=4000 go run ./cmd/scaffold
-```
-
-### Using the Application
-
-The application provides a RESTful API for generating Go API scaffolds. You can interact with it using tools like `curl` or Postman:
+## API Usage
 
 ```bash
 # Generate a scaffold
@@ -145,314 +52,59 @@ curl -X POST http://localhost:8081/api/generate \
     "databaseType": "postgresql",
     "routerType": "echo",
     "configType": "env",
-    "logFormat": "json",
-    "modulePath": "github.com/your-username/your-project",
+    "modulePath": "github.com/username/project",
     "features": ["basic-auth", "sql-migrations"]
   }'
 
-# Download the generated scaffold
-curl -o scaffold.zip http://localhost:8081/api/download/GENERATED_ID
+# Download the scaffold
+curl -o project.zip http://localhost:8081/api/download/SCAFFOLD_ID
 ```
-
-Available options:
-
-1. API scaffold configuration:
-   - Database type: `none`, `postgresql`, `mysql`, `sqlite`
-   - Router/framework: `chi`, `echo`, `gin`, `standard`
-   - Configuration type: `env`, `flags`
-   - Logging format: `json`, `text`
-
-2. Available features:
-   - `access-logging`: HTTP request/response logging
-   - `admin-makefile`: Administrative Makefile commands
-   - `auto-versioning`: Automatic version number generation
-   - `basic-auth`: Basic authentication
-   - `email-support`: Email sending capabilities
-   - `error-notifications`: Error reporting
-   - `secure-cookies`: Encrypted cookies
-   - `sql-migrations`: Database migrations
-   - `user-accounts`: User authentication system
-   - `https-support`: HTTPS/TLS support
-   - `custom-errors`: Custom error pages
-   - And more...
 
 ### API Endpoints
 
-- `GET /api/health` - Health check endpoint
-- `POST /api/generate` - Generate a scaffold based on provided configuration
-- `GET /api/templates` - List available templates
-- `GET /api/features` - List available features
-- `GET /api/download/:id` - Download a previously generated scaffold
-- `GET /api/docs` - API documentation (OpenAPI specification in JSON format)
+- `GET /api/health` - Health check
+- `POST /api/generate` - Generate scaffold
+- `GET /api/templates` - List templates
+- `GET /api/features` - List features
+- `GET /api/download/:id` - Download scaffold
+- `GET /api/docs` - API documentation
 
-#### Detailed API Documentation
-
-##### Generate Scaffold
-
-```
-POST /api/generate
-```
-
-Request body:
-
-```json
-{
-  "appType": "api",
-  "databaseType": "postgresql",
-  "routerType": "echo",
-  "configType": "env",
-  "logFormat": "json",
-  "modulePath": "github.com/username/project",
-  "features": [
-    "basic-auth",
-    "sql-migrations",
-    "https-support"
-  ]
-}
-```
-
-Response:
-
-```json
-{
-  "id": "scaffold-123456",
-  "options": {
-    "appType": "api",
-    "databaseType": "postgresql",
-    "routerType": "echo",
-    "configType": "env",
-    "logFormat": "json",
-    "modulePath": "github.com/username/project",
-    "features": ["basic-auth", "sql-migrations", "https-support"]
-  },
-  "createdAt": "2025-07-09T12:34:56Z",
-  "filePath": "/tmp/go-scaffold/scaffold-123456.zip",
-  "size": 123456
-}
-```
-
-##### List Templates
-
-```
-GET /api/templates
-```
-
-Response:
-
-```json
-[
-  {
-    "id": "api-echo",
-    "name": "API with Echo",
-    "description": "RESTful API using Echo framework",
-    "type": "api",
-    "path": "/templates/api/echo"
-  },
-  {
-    "id": "api-chi",
-    "name": "API with Chi",
-    "description": "RESTful API using Chi router",
-    "type": "api",
-    "path": "/templates/api/chi"
-  }
-]
-```
-
-##### List Features
-
-```
-GET /api/features
-```
-
-Response:
-
-```json
-[
-  {
-    "id": "basic-auth",
-    "name": "Basic Authentication",
-    "description": "Adds HTTP Basic Authentication to the API",
-    "isPremium": false
-  },
-  {
-    "id": "sql-migrations",
-    "name": "SQL Migrations",
-    "description": "Adds database migration support",
-    "isPremium": false
-  }
-]
-```
-
-##### Download Scaffold
-
-```
-GET /api/download/:id
-```
-
-Returns a ZIP file containing the generated scaffold.
-
-### Workflow Example
-
-Here's a typical workflow for using Go Scaffold Generator in your development process:
-
-1. **Generate a scaffold**:
-   ```bash
-   # Generate a new API scaffold with Echo and PostgreSQL
-   curl -X POST http://localhost:8081/api/generate \
-     -H "Content-Type: application/json" \
-     -d '{
-       "appType": "api",
-       "databaseType": "postgresql",
-       "routerType": "echo",
-       "configType": "env",
-       "modulePath": "github.com/yourusername/yourproject"
-     }'
-   # Response will contain scaffold ID
-   ```
-
-2. **Download the scaffold**:
-   ```bash
-   # Download the generated scaffold
-   curl -o my-new-project.zip http://localhost:8081/api/download/scaffold-123456
-   ```
-
-3. **Extract and use**:
-   ```bash
-   # Extract the ZIP file
-   unzip my-new-project.zip -d my-new-project
-   cd my-new-project
-   
-   # Initialize Git repository
-   git init
-   
-   # Install dependencies and run
-   go mod tidy
-   go run ./cmd/api
-   ```
-
-### Client Libraries
-
-We provide official client libraries to interact with the Go Scaffold Generator API:
-
-- [go-scaffold-client-go](https://github.com/regiwitanto/go-scaffold-client-go) - Go client
-- [go-scaffold-client-js](https://github.com/regiwitanto/go-scaffold-client-js) - JavaScript/TypeScript client
-
-These libraries make it easy to integrate Go Scaffold Generator with your development workflow or tools.
-
-### Docker Deployment
-
-You can also run this service using Docker:
+### Docker
 
 ```bash
-# Build the Docker image
+# Run with Docker
 docker build -t go-scaffold .
-
-# Run the container
 docker run -p 8081:8081 -e PORT=8081 go-scaffold
+
+# Or with Docker Compose
+docker-compose up -d
 ```
-
-For production deployment, you might want to use Docker Compose:
-
-```yaml
-# docker-compose.yml
-version: '3'
-services:
-  go-scaffold:
-    build: .
-    ports:
-      - "8081:8081"
-    environment:
-      - PORT=8081
-      - APP_ENV=production
-      - TEMPLATE_DIR=/app/templates
-    volumes:
-      - ./templates:/app/templates
-    restart: always
-```
-
-Run with `docker-compose up -d`.
 
 ## Development
 
 ### Testing
 
-You can run various tests with the Makefile:
-
 ```bash
-# Run all tests
-make test
-
-# Run unit tests only
-make test-unit
-
-# Run integration tests only
-make test-integration
-
-# Run functional tests only
-make test-functional
-
-# Run tests with coverage
-make test-cover
+# Run tests
+make test            # all tests
+make test-unit       # unit tests only
+make test-cover      # with coverage
 ```
 
-### Core Components
+### Architecture
 
-1. **Template Engine**: Responsible for parsing and processing templates
-2. **Scaffold Generator**: Creates REST API scaffolds based on user preferences
-3. **API**: RESTful API for programmatic scaffold generation
-4. **ZIP Creator**: Creates downloadable archives of generated code
+The project follows Clean Architecture with:
+- **Domain Layer**: Core business logic
+- **Application Layer**: Use cases
+- **Infrastructure Layer**: Storage implementations
+- **Interface Layer**: API and controllers
 
-### Architecture Overview
+## License & Contributing
 
-This project follows Clean Architecture with Domain-Driven Design principles:
-
-1. **Domain Layer**: 
-   - Core entities and business rules
-   - Independent of external frameworks and tools
-
-2. **Application Layer**:
-   - Use cases that orchestrate the flow of data
-   - Scaffold generation logic
-
-3. **Infrastructure Layer**:
-   - Template storage (filesystem)
-   - ZIP file generation
-
-4. **Interface Layer**:
-   - RESTful API
-   - DTOs for data transformation
-
-### Extension Points
-
-The system is designed to be extensible through:
-
-1. **Template System**: Add new templates for different router types and frameworks
-2. **Feature Plugins**: Add new features that can be included in the generated code
-3. **Output Formats**: Support different output formats beyond ZIP files
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Contributing
-
-Contributions are welcome! Here's how you can help:
-
-1. **Report bugs** by opening an issue
-2. **Suggest features** by opening an issue
-3. **Submit pull requests** with bug fixes or features
-4. **Improve documentation** by submitting pull requests
-
-Please follow these steps for contributing:
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+- Licensed under the MIT License
+- Contributions welcome through issues and pull requests
 
 ## Acknowledgments
 
 - [Autostrada](https://autostrada.dev/) for inspiration
 - [Echo Framework](https://echo.labstack.com/) for the web framework
-- [text/template](https://golang.org/pkg/text/template/) for template processing

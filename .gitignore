@@ -6,6 +6,7 @@
 *.dylib
 *.test
 *.out
+go-scaffold
 
 # Output of the go coverage tool
 *.cover

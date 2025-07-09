@@ -2,9 +2,6 @@
 
 A pure Go backend service that generates REST API scaffolds based on user preferences, built with Echo framework.
 
-![GitHub top language](https://img.shields.io/github/languages/top/regiwitanto/go-scaffold)
-![GitHub](https://img.shields.io/github/license/regiwitanto/go-scaffold)
-
 ## Features
 
 - Generate complete API scaffolds with Echo, Chi, Gin, or standard library
